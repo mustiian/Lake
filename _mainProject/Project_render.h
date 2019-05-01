@@ -27,8 +27,11 @@ struct Shader {
 	GLint diffuseLocation;
 	GLint specularLocation;
 	GLint shininessLocation;
+	GLint cameraPositionLocation; // (for flashlight)
+	GLint cameraDirectionLocation; // (for flashlight)
 
 	GLint useTextureLocation;
+	GLint useFlashlightLocation;
 	GLint texSamplerLocation;
 };
 
@@ -77,6 +80,7 @@ struct State {
 	int windowWidth;
 	int windowHeight;
 	bool firstInputMouse;
+	bool useFlashlight;
 	bool keyMap[KEYS_COUNT];
 };
 

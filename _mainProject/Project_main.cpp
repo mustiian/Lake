@@ -124,6 +124,10 @@ void Keyboard(unsigned char key, int mouseX, int mouseY) {
 		clean();
 		glutLeaveMainLoop();
 		break;
+	case 'f':
+		std::cout << "Flashlight" << std::endl;
+		gameState.useFlashlight = !gameState.useFlashlight;
+		break;
 	case '1':
 		std::cout << "Static look" << std::endl;
 		camera.staticView = !camera.staticView;
@@ -204,7 +208,6 @@ void Timer(int value) {
 			camera.speed = 0.0f;
 		}
 	}
-
 	camera.position += camera.speed * camera.direction;
 
 	glutPostRedisplay();
@@ -213,15 +216,15 @@ void Timer(int value) {
 
 void setAttr() {
 	objects.tree = new Object();
-	objects.tree->position = glm::vec3(0.0f, -2.0f, -5.0f);
+	objects.tree->position = glm::vec3(10.0f, -3.f, -10.0f);
 	objects.tree->direction = glm::vec3(0.0f, 0.0f, 0.0f);
-	objects.tree->size = 4.0f;
+	objects.tree->size = 6.0f;
 	objects.tree->angle = 0.0f;
 
 	objects.ground = new Object();
-	objects.ground->position = glm::vec3(0.0f, -2.0f, -0.55f);
+	objects.ground->position = glm::vec3(5.0f, -1.0f, -0.55f);
 	objects.ground->direction = glm::vec3(0.0f, 0.0f, 0.0f);
-	objects.ground->size = 1.0f;
+	objects.ground->size = 6.0f;
 	objects.ground->angle = 0.0f;
 
 	gameState.windowWidth = WIN_WIDTH;
@@ -234,6 +237,7 @@ void setAttr() {
 	camera.viewAngle = 270.0f;
 
 	gameState.firstInputMouse = true;
+	gameState.useFlashlight = false;
 	camera.staticView = false;
 }
 
