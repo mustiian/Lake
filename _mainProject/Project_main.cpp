@@ -32,6 +32,7 @@ void DisplayFunc (void) {
 	drawSkybox(objects.skybox, gameState.viewMatrix, gameState.projectionMatrix);
 	drawTree(objects.tree, gameState.viewMatrix, gameState.projectionMatrix);
 	drawGround(objects.ground, gameState.viewMatrix, gameState.projectionMatrix);
+	drawWater(objects.water, gameState.viewMatrix, gameState.projectionMatrix);
 
 	CHECK_GL_ERROR();
 	glutSwapBuffers();
@@ -118,6 +119,7 @@ void clean(void) {
 	delete objects.tree;
 	delete objects.skybox;
 	delete objects.ground;
+	delete objects.water;
 }
 
 void Keyboard(unsigned char key, int mouseX, int mouseY) {
@@ -193,8 +195,15 @@ void SpecialKeyboardUp(int key, int mouseX, int mouseY) {
 	}
 }
 
+void update(float elapsedTime) {
+	float deltaTime = elapsedTime - gameState.currentTime;
+	gameState.currentTime = elapsedTime;
+	camera.position +=  camera.speed * camera.direction;
+}
+
 void Timer(int value) {
 	glutTimerFunc(refreshTime, Timer, 0);
+	gameState.elapsedTime = 0.001f * (float)glutGet(GLUT_ELAPSED_TIME);
 
 	if (gameState.keyMap[KEY_RIGHT_ARROW]) {
 		turnCameraRight(2.0f);
@@ -213,11 +222,10 @@ void Timer(int value) {
 			camera.speed = 0.0f;
 		}
 	}
-	camera.position += camera.speed * camera.direction;
+	update(gameState.elapsedTime);
 
 	glutPostRedisplay();
 }
-
 
 void setAttr() {
 	objects.tree = new Object();
@@ -238,13 +246,20 @@ void setAttr() {
 	objects.skybox->size = 100.0f;
 	objects.skybox->angle = 0.0f;
 
+	objects.water = new Object();
+	objects.water->position = glm::vec3(10.0f, 1.0f, 2.0f);
+	objects.water->direction = glm::vec3(0.0f, 0.0f, 0.0f);
+	objects.water->size = 2.0f;
+	objects.water->angle = 0.0f;
+
 	gameState.windowWidth = WIN_WIDTH;
 	gameState.windowHeight = WIN_HEIGHT;
+	gameState.elapsedTime = 0.001f * (float)glutGet(GLUT_ELAPSED_TIME);
 
 	camera.position = glm::vec3(0.0f, 1.0f, 0.0f);
 	camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
 	camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
-	camera.speed = 0.05f;
+	camera.speed = 0.0f;
 	camera.viewAngle = 270.0f;
 
 	gameState.useFog = false;

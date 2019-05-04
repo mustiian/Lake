@@ -25,13 +25,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="test.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files</Filter>
     </ClCompile>
     <ClCompile Include="meshes\ground.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files</Filter>
     </ClCompile>
     <ClCompile Include="meshes\skybox.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="meshes\water.cpp">
+      <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -50,12 +53,21 @@
     <ClInclude Include="meshes\skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="meshes\water.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\shader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\water.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\water.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

@@ -6,9 +6,11 @@ Camera camera;
 State gameState;
 
 Shader shaderProgram;
+Shader waterShaderProgram;
 MeshGeometry * treeGeometry = NULL;
 MeshGeometry * groundGeometry = NULL;
 MeshGeometry * skyboxGeometry = NULL;
+MeshGeometry * waterGeometry = NULL;
 Objects objects;
 
 bool initShaderProgram() {
@@ -57,6 +59,51 @@ bool initShaderProgram() {
 		std::cout << "Can''t get all uniforms" << std::endl;
 		return false;
 	}
+
+	if (!initWaterShaderProgram()) {
+		std::cout << "Can''t init water shader program" << std::endl;
+		return false;
+	}
+
+	return true;
+}
+bool initWaterShaderProgram() {
+	std::vector<GLuint> shaders;
+
+	shaders.push_back(pgr::createShaderFromFile(GL_VERTEX_SHADER, "shaders/water.vert"));
+	shaders.push_back(pgr::createShaderFromFile(GL_FRAGMENT_SHADER, "shaders/water.frag"));
+	if (shaders.size() != 2) {
+		std::cout << "Can''t load shaders files" << std::endl;
+		return false;
+	}
+
+	waterShaderProgram.program = pgr::createProgram(shaders);
+	if (shaderProgram.program == 0) {
+		std::cout << "Can''t create shader program" << std::endl;
+		return false;
+	}
+
+	// vertex attr
+	waterShaderProgram.positionLocation = glGetAttribLocation(waterShaderProgram.program, "position");
+	waterShaderProgram.normalLocation = glGetAttribLocation(waterShaderProgram.program, "normal");
+	waterShaderProgram.texCoordLocation = glGetAttribLocation(waterShaderProgram.program, "texCoord");
+
+	// vertex uniforms
+	waterShaderProgram.PVMmatrixLocation = glGetUniformLocation(waterShaderProgram.program, "PVMmatrix");
+	waterShaderProgram.MmatrixLocation = glGetUniformLocation(waterShaderProgram.program, "modelMatrix");
+	waterShaderProgram.VmatrixLocation = glGetUniformLocation(waterShaderProgram.program, "viewMatrix");
+	waterShaderProgram.normalMatrixLocation = glGetUniformLocation(waterShaderProgram.program, "normalMatrix");
+
+	// material
+	waterShaderProgram.ambientLocation = glGetUniformLocation(waterShaderProgram.program, "material.ambient");
+	waterShaderProgram.diffuseLocation = glGetUniformLocation(waterShaderProgram.program, "material.diffuse");
+	waterShaderProgram.specularLocation = glGetUniformLocation(waterShaderProgram.program, "material.specular");
+	waterShaderProgram.shininessLocation = glGetUniformLocation(waterShaderProgram.program, "material.shininess");
+
+	// texture
+	waterShaderProgram.texSamplerLocation = glGetUniformLocation(waterShaderProgram.program, "texSampler");
+	waterShaderProgram.timeLocation = glGetUniformLocation(waterShaderProgram.program, "time");
+	waterShaderProgram.useFogLocation = glGetUniformLocation(waterShaderProgram.program, "useFog");
 
 	return true;
 }
@@ -187,6 +234,48 @@ void initSkybox(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
+void initWater(Shader &shader, MeshGeometry ** geometry) {
+	*geometry = new MeshGeometry;
+
+	(*geometry)->texture = pgr::createTexture("meshes/water.jpg");
+
+	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
+	glBindVertexArray((*geometry)->vertexArrayObject);
+
+	// Vertex buffer 
+	glGenBuffers(1, &((*geometry)->vertexBufferObject));
+	glBindBuffer(GL_ARRAY_BUFFER, (*geometry)->vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, waterNVertices*waterNAttribsPerVertex * sizeof(float), waterVertices, GL_STATIC_DRAW);
+
+	// Element buffer
+	glGenBuffers(1, &((*geometry)->elementBufferObject));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (*geometry)->elementBufferObject);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * sizeof(unsigned)* waterNTriangles, waterTriangles, GL_STATIC_DRAW);
+
+	// Get position location
+	glEnableVertexAttribArray(shader.positionLocation);
+	glVertexAttribPointer(shader.positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+
+	CHECK_GL_ERROR();
+	// Get normal location
+	glEnableVertexAttribArray(shader.normalLocation);
+	glVertexAttribPointer(shader.normalLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	// Get texture location
+	glEnableVertexAttribArray(shader.texCoordLocation);
+	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+	(*geometry)->ambient = glm::vec3(0.9f, 0.9f, 0.9f);
+	(*geometry)->diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+	(*geometry)->specular = glm::vec3(0.3f, 0.3f, 0.3f);
+	(*geometry)->shininess = 10.0f;
+	(*geometry)->numTriangles = waterNTriangles;
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+}
+
 void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 	glUseProgram(shaderProgram.program);
 
@@ -274,15 +363,65 @@ void drawSkybox(Object *skybox, const glm::mat4 & viewMatrix, const glm::mat4 & 
 	glUseProgram(0);
 }
 
+void drawWater(Object *water, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
+	glUseProgram(waterShaderProgram.program);
+
+	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), water->position);
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(water->size, water->size, water->size));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+	// Set transform attributes
+	glm::mat4 PVM = projectionMatrix * viewMatrix * modelMatrix;
+	glUniformMatrix4fv(waterShaderProgram.PVMmatrixLocation, 1, GL_FALSE, value_ptr(PVM));
+	glUniformMatrix4fv(waterShaderProgram.VmatrixLocation, 1, GL_FALSE, value_ptr(viewMatrix));
+	glUniformMatrix4fv(waterShaderProgram.MmatrixLocation, 1, GL_FALSE, value_ptr(modelMatrix));
+
+	glm::mat4 modelRotationMatrix = glm::mat4(
+		modelMatrix[0],
+		modelMatrix[1],
+		modelMatrix[2],
+		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+	);
+	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelRotationMatrix));
+	glUniformMatrix4fv(waterShaderProgram.normalMatrixLocation, 1, GL_FALSE, value_ptr(normalMatrix));
+
+	// Set material uniforms
+	glUniform3fv(waterShaderProgram.diffuseLocation, 1, glm::value_ptr(waterGeometry->diffuse));
+	glUniform3fv(waterShaderProgram.ambientLocation, 1, glm::value_ptr(waterGeometry->ambient));
+	glUniform3fv(waterShaderProgram.specularLocation, 1, glm::value_ptr(waterGeometry->specular));
+	glUniform1f(waterShaderProgram.shininessLocation, waterGeometry->shininess);
+	glUniform1i(waterShaderProgram.useFogLocation, gameState.useFog);
+
+	// Set texture
+	glUniform1i(waterShaderProgram.texSamplerLocation, 0);
+	glActiveTexture(GL_TEXTURE0 + 0);
+	glBindTexture(GL_TEXTURE_2D, waterGeometry->texture);
+
+	glUniform1f(waterShaderProgram.timeLocation, gameState.currentTime);
+
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindVertexArray(waterGeometry->vertexArrayObject);
+
+	glDrawElements(GL_TRIANGLES, waterNTriangles * 3, GL_UNSIGNED_INT, 0);
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+
 void setMaterialUniforms(const glm::vec3 & ambient, const glm::vec3 & diffuse, const glm::vec3 & specular, float shininess, GLuint texture, bool useSkybox) {
 	// Set uniforms
 	glUniform3fv(shaderProgram.diffuseLocation, 1, glm::value_ptr(diffuse));
 	glUniform3fv(shaderProgram.ambientLocation, 1, glm::value_ptr(ambient));
 	glUniform3fv(shaderProgram.specularLocation, 1, glm::value_ptr(specular));
 	glUniform1f(shaderProgram.shininessLocation, shininess);
-	glUniform1f(shaderProgram.useFlashlightLocation, gameState.useFlashlight);
-	glUniform1f(shaderProgram.useSkyboxLocation, useSkybox);
-	glUniform1f(shaderProgram.useFogLocation, gameState.useFog);
+	glUniform1i(shaderProgram.useFlashlightLocation, gameState.useFlashlight);
+	glUniform1i(shaderProgram.useSkyboxLocation, useSkybox);
+	glUniform1i(shaderProgram.useFogLocation, gameState.useFog);
 
 	// Set texture
 	if (texture != 0) {
@@ -337,12 +476,15 @@ void cleanMeshes() {
 	deleteGeometry(treeGeometry);
 	deleteGeometry(groundGeometry);
 	deleteGeometry(skyboxGeometry);
+	deleteGeometry(waterGeometry);
 	pgr::deleteProgramAndShaders(shaderProgram.program);
+	pgr::deleteProgramAndShaders(waterShaderProgram.program);
 }
 
 void initModels() {
 	initTree(shaderProgram, &treeGeometry);
 	initSkybox(shaderProgram, &skyboxGeometry);
 	initGround(shaderProgram, &groundGeometry);
+	initWater(waterShaderProgram, &waterGeometry);
 
 }
