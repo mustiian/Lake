@@ -8,6 +8,7 @@ State gameState;
 Shader shaderProgram;
 MeshGeometry * treeGeometry = NULL;
 MeshGeometry * groundGeometry = NULL;
+MeshGeometry * skyboxGeometry = NULL;
 Objects objects;
 
 bool initShaderProgram() {
@@ -47,6 +48,7 @@ bool initShaderProgram() {
 	// texture
 	shaderProgram.texSamplerLocation = glGetUniformLocation(shaderProgram.program, "texSampler");
 	shaderProgram.useTextureLocation = glGetUniformLocation(shaderProgram.program, "material.useTexture");
+	shaderProgram.useSkyboxLocation = glGetUniformLocation(shaderProgram.program, "material.useSkybox");
 
 	shaderProgram.useFlashlightLocation = glGetUniformLocation(shaderProgram.program, "useFlashlight");
 
@@ -144,6 +146,49 @@ void initGround(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
+void initSkybox(Shader &shader, MeshGeometry ** geometry) {
+	*geometry = new MeshGeometry;
+
+	(*geometry)->texture = 0;
+	(*geometry)->texture = pgr::createTexture("meshes/skybox.png");
+
+	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
+	glBindVertexArray((*geometry)->vertexArrayObject);
+
+	// Vertex buffer 
+	glGenBuffers(1, &((*geometry)->vertexBufferObject));
+	glBindBuffer(GL_ARRAY_BUFFER, (*geometry)->vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER,skyboxNVertices*skyboxNAttribsPerVertex * sizeof(float), skyboxVertices, GL_STATIC_DRAW);
+
+	// Element buffer
+	glGenBuffers(1, &((*geometry)->elementBufferObject));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (*geometry)->elementBufferObject);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * sizeof(unsigned)* skyboxNTriangles, skyboxTriangles, GL_STATIC_DRAW);
+
+	// Get position location
+	glEnableVertexAttribArray(shader.positionLocation);
+	glVertexAttribPointer(shader.positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+
+	CHECK_GL_ERROR();
+	// Get normal location
+	glEnableVertexAttribArray(shader.normalLocation);
+	glVertexAttribPointer(shader.normalLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	// Get texture location
+	glEnableVertexAttribArray(shader.texCoordLocation);
+	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+	(*geometry)->ambient = glm::vec3(0.9f, 0.9f, 0.9f);
+	(*geometry)->diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+	(*geometry)->specular = glm::vec3(0.3f, 0.3f, 0.3f);
+	(*geometry)->shininess = 10.0f;
+	(*geometry)->numTriangles = skyboxNTriangles;
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+}
+
 void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 	glUseProgram(shaderProgram.program);
 
@@ -157,7 +202,8 @@ void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 		treeGeometry->diffuse,
 		treeGeometry->specular,
 		treeGeometry->shininess,
-		treeGeometry->texture
+		treeGeometry->texture,
+		false
 	);
 
 	glBindVertexArray(treeGeometry->vertexArrayObject);
@@ -183,7 +229,8 @@ void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & 
 		groundGeometry->diffuse,
 		groundGeometry->specular,
 		groundGeometry->shininess,
-		groundGeometry->texture
+		groundGeometry->texture,
+		false
 	);
 
 	glBindVertexArray(groundGeometry->vertexArrayObject);
@@ -196,13 +243,41 @@ void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & 
 	glUseProgram(0);
 }
 
-void setMaterialUniforms(const glm::vec3 & ambient, const glm::vec3 & diffuse, const glm::vec3 & specular, float shininess, GLuint texture) {
+void drawSkybox(Object *skybox, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
+	glUseProgram(shaderProgram.program);
+
+	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), skybox->position);
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(skybox->size, skybox->size, skybox->size));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+	setTransform(modelMatrix, viewMatrix, projectionMatrix);
+	setMaterialUniforms(
+		skyboxGeometry->ambient,
+		skyboxGeometry->diffuse,
+		skyboxGeometry->specular,
+		skyboxGeometry->shininess,
+		skyboxGeometry->texture,
+		true
+	);
+
+	glBindVertexArray(skyboxGeometry->vertexArrayObject);
+
+	glDrawElements(GL_TRIANGLES, groundNTriangles * 3, GL_UNSIGNED_INT, 0);
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+
+void setMaterialUniforms(const glm::vec3 & ambient, const glm::vec3 & diffuse, const glm::vec3 & specular, float shininess, GLuint texture, bool useSkybox) {
 	// Set uniforms
 	glUniform3fv(shaderProgram.diffuseLocation, 1, glm::value_ptr(diffuse));
 	glUniform3fv(shaderProgram.ambientLocation, 1, glm::value_ptr(ambient));
 	glUniform3fv(shaderProgram.specularLocation, 1, glm::value_ptr(specular));
 	glUniform1f(shaderProgram.shininessLocation, shininess);
 	glUniform1f(shaderProgram.useFlashlightLocation, gameState.useFlashlight);
+	glUniform1f(shaderProgram.useSkyboxLocation, useSkybox);
 
 	// Set texture
 	if (texture != 0) {
@@ -225,8 +300,16 @@ void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMatrix, c
 	glUniformMatrix4fv(shaderProgram.VmatrixLocation, 1, GL_FALSE, value_ptr(viewMatrix));
 	glUniformMatrix4fv(shaderProgram.MmatrixLocation, 1, GL_FALSE, value_ptr(modelMatrix));
 
-	glm::mat4 normMatrix = glm::transpose(glm::inverse(modelMatrix));
-	glUniformMatrix4fv(shaderProgram.normalMatrixLocation, 1, GL_FALSE, value_ptr(normMatrix));
+	 glm::mat4 modelRotationMatrix = glm::mat4(
+		modelMatrix[0],
+		modelMatrix[1],
+		modelMatrix[2],
+		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+	);
+	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelRotationMatrix));
+
+	//glm::mat4 normMatrix = glm::transpose(glm::inverse(modelMatrix));
+	glUniformMatrix4fv(shaderProgram.normalMatrixLocation, 1, GL_FALSE, value_ptr(normalMatrix));
 
 	// Camera
 	glUniform3fv(shaderProgram.cameraPositionLocation, 1, glm::value_ptr(camera.position));
@@ -248,10 +331,13 @@ void deleteGeometry(MeshGeometry *geometry) {
 void cleanMeshes() {
 	deleteGeometry(treeGeometry);
 	deleteGeometry(groundGeometry);
+	deleteGeometry(skyboxGeometry);
 	pgr::deleteProgramAndShaders(shaderProgram.program);
 }
 
 void initModels() {
 	initGround(shaderProgram, &groundGeometry);
 	initTree(shaderProgram, &treeGeometry);
+	initSkybox(shaderProgram, &skyboxGeometry);
+
 }

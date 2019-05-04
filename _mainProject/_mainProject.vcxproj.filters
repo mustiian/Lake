@@ -30,6 +30,9 @@
     <ClCompile Include="meshes\ground.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="meshes\skybox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="meshes\ground.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

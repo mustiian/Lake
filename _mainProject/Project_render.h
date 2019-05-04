@@ -4,6 +4,7 @@
 #pragma once
 #include "meshes\test.h"
 #include "meshes\ground.h"
+#include "meshes\skybox.h"
 #include "data.h"
 #include <iostream>
 #include <vector>
@@ -31,6 +32,7 @@ struct Shader {
 	GLint cameraDirectionLocation; // (for flashlight)
 
 	GLint useTextureLocation;
+	GLint useSkyboxLocation;
 	GLint useFlashlightLocation;
 	GLint texSamplerLocation;
 };
@@ -58,6 +60,7 @@ struct Object {
 struct Objects {
 	Object * tree;
 	Object * ground;
+	Object * skybox;
 };
 
 extern bool initShaderProgram();
@@ -66,9 +69,11 @@ extern void initTree(Shader &shader, MeshGeometry ** geometry);
 extern void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 extern void initGround(Shader &shader, MeshGeometry ** geometry);
 extern void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
+extern void initSkybox(Shader &shader, MeshGeometry ** geometry);
+extern void drawSkybox(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
 extern void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
-extern void setMaterialUniforms(const glm::vec3 &ambient, const glm::vec3 &diffuse, const glm::vec3 &specular, float shininess, GLuint texture);
+extern void setMaterialUniforms(const glm::vec3 &ambient, const glm::vec3 &diffuse, const glm::vec3 &specular, float shininess, GLuint texture, bool useSkybox);
 extern void deleteGeometry(MeshGeometry *geometry);
 extern void cleanMeshes();
 extern void initModels();
@@ -96,9 +101,11 @@ struct Camera {
 	float viewAngle;
 };
 
-extern Shader shaderProgram;
 extern MeshGeometry * treeGeometry;
 extern MeshGeometry * groundGeometry;
+extern MeshGeometry * skyboxGeometry;
+
+extern Shader shaderProgram;
 extern Objects objects;
 extern Camera camera;
 extern State gameState;

@@ -7,6 +7,7 @@ struct Material {
 	float shininess;
 
 	bool useTexture; 
+	bool useSkybox;
 	bool useReflector;
 };
 
@@ -27,6 +28,7 @@ uniform mat4 PVMmatrix;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 normalMatrix;
+
 uniform sampler2D texSampler;
 uniform vec3 cameraPosition;
 uniform vec3 cameraDirection;
@@ -46,7 +48,7 @@ void initSun(){
 	sun.ambient = vec3(0.5f);
 	sun.diffuse = vec3(1.0f, 1.0f, 0.5f);
 	sun.specular = vec3(1.0f);
-	sun.position = (viewMatrix * vec4(1.0, 1.0, 1.0, 0.0)).xyz;
+	sun.position = (viewMatrix * vec4(0.7, -0.6, 0.3, 0.0)).xyz;
 	sun.direction = (viewMatrix * vec4(0.7, -0.6, 0.9, 0.0)).xyz;
 }
 
@@ -74,7 +76,7 @@ vec4 spotlightLight(Light light, vec3 vertexPosition, vec3 vertexNormal){
 	 //specular
 	 vec3 refl = reflect(-lightDir, vertexNormal);
 	 vec3 toEyes = normalize(-vertexPosition);
-	 float spec = max(dot(refl, toEyes),0.0f);
+	 float spec = max(dot(refl, toEyes), 0.0f);
 	 vec3 specular = material.specular * light.specular * pow(spec, material.shininess);
 
 	 vec3 result = ambient + diffuse + specular;
@@ -96,14 +98,13 @@ vec4 directionLight(Light light, vec3 vertexPosition, vec3 vertexNormal){
 	 vec3 ambient = light.ambient * material.ambient;
 
 	 // diffuse
-	 vec3 normal = vertexNormal;
 	 vec3 lightPos = normalize(light.position);
-	 float diff = max(dot(normal, lightPos), 0.0);
+	 float diff = max(dot(vertexNormal, lightPos), 0.0);
 	 vec3 diffuse = light.diffuse * material.diffuse * diff;
 
 	 // specular
+	 vec3 refl = reflect(-lightPos, vertexNormal);
 	 vec3 viewPos = normalize(-vertexPosition);
-	 vec3 refl = reflect(-lightPos, normal);
 	 float spec = max(dot(refl, viewPos), 0.0);
 	 vec3 specular = light.specular * material.specular * pow(spec, material.shininess);
 
@@ -143,10 +144,14 @@ void main() {
 		outColor += spotlightLight(spotlight, eyePos_v, normal_v);
 
 	outColor += directionLight(sun, eyePos_v, normal_v);
-	outColor += sunLight(sun, eyePos_v, normal_v);
+	//outColor += sunLight(sun, eyePos_v, normal_v);
 	
-	if(material.useTexture){
-		vec2 UV = vec2(texCoord_v.x * 30, texCoord_v.y * 30);
+	if (material.useSkybox){
+		vec2 UV = vec2(texCoord_v.x * 1, texCoord_v.y * 1);
+		outColor = texture(texSampler, UV);
+	}
+	else if(material.useTexture){
+		vec2 UV = vec2(texCoord_v.x * 10, texCoord_v.y * 10);
 		outColor *= texture(texSampler, UV).rgb;
 	}
 

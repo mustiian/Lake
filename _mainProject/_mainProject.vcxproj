@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="meshes\ground.cpp" />
+    <ClCompile Include="meshes\skybox.cpp" />
     <ClCompile Include="Project_render.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="Project_main.cpp" />
@@ -27,6 +28,7 @@
   <ItemGroup>
     <ClInclude Include="data.h" />
     <ClInclude Include="meshes\ground.h" />
+    <ClInclude Include="meshes\skybox.h" />
     <ClInclude Include="meshes\test.h" />
     <ClInclude Include="Project_render.h" />
   </ItemGroup>

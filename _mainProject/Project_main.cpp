@@ -21,7 +21,7 @@ void setCamera() {
 		cameraUpVector
 	);
 
-	gameState.projectionMatrix = glm::perspective(glm::radians (60.0f), float(gameState.windowWidth) / float(gameState.windowHeight), 0.1f, 100.0f);
+	gameState.projectionMatrix = glm::perspective(glm::radians (60.0f), float(gameState.windowWidth) / float(gameState.windowHeight), 0.1f, 300.0f);
 }
 
 void DisplayFunc (void) {
@@ -29,6 +29,7 @@ void DisplayFunc (void) {
 
 	setCamera();
 
+	drawSkybox(objects.skybox, gameState.viewMatrix, gameState.projectionMatrix);
 	drawTree(objects.tree, gameState.viewMatrix, gameState.projectionMatrix);
 	drawGround(objects.ground, gameState.viewMatrix, gameState.projectionMatrix);
 
@@ -40,7 +41,7 @@ void Reshape(int width, int height) {
 	gameState.windowWidth = width;
 	gameState.windowHeight = height;
 	glViewport(0, 0, gameState.windowWidth, gameState.windowHeight);
-	gameState.projectionMatrix = glm::perspective(glm::radians(60.0f), float(gameState.windowWidth) / float(gameState.windowHeight), 1.0f, 100.0f);
+	gameState.projectionMatrix = glm::perspective(glm::radians(60.0f), float(gameState.windowWidth) / float(gameState.windowHeight), 1.0f, 300.0f);
 }
 
 void increaseCameraSpeed(float deltaSpeed) {
@@ -115,6 +116,7 @@ void Mouse(int button, int status, int x, int y) {
 void clean(void) {
 	cleanMeshes();
 	delete objects.tree;
+	delete objects.skybox;
 	delete objects.ground;
 }
 
@@ -227,10 +229,16 @@ void setAttr() {
 	objects.ground->size = 6.0f;
 	objects.ground->angle = 0.0f;
 
+	objects.skybox = new Object();
+	objects.skybox->position = glm::vec3(0.0f, 20.0f, 0.0f);
+	objects.skybox->direction = glm::vec3(0.0f, 0.0f, 0.0f);
+	objects.skybox->size = 100.0f;
+	objects.skybox->angle = 0.0f;
+
 	gameState.windowWidth = WIN_WIDTH;
 	gameState.windowHeight = WIN_HEIGHT;
 
-	camera.position = glm::vec3(0.0f, 0.0f, 0.0f);
+	camera.position = glm::vec3(0.0f, 1.0f, 0.0f);
 	camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
 	camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
 	camera.speed = 0.05f;
