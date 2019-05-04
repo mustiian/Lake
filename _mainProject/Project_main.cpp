@@ -130,11 +130,14 @@ void Keyboard(unsigned char key, int mouseX, int mouseY) {
 		std::cout << "Flashlight" << std::endl;
 		gameState.useFlashlight = !gameState.useFlashlight;
 		break;
+	case 'g':
+		std::cout << "Fog" << std::endl;
+		gameState.useFog = !gameState.useFog;
+		break;
 	case '1':
 		std::cout << "Static look" << std::endl;
 		camera.staticView = !camera.staticView;
 		if (camera.freeCamera) {
-			gameState.firstInputMouse = true;
 			camera.freeCamera = false;
 			glutPassiveMotionFunc(NULL);
 		}
@@ -244,7 +247,7 @@ void setAttr() {
 	camera.speed = 0.05f;
 	camera.viewAngle = 270.0f;
 
-	gameState.firstInputMouse = true;
+	gameState.useFog = false;
 	gameState.useFlashlight = false;
 	camera.staticView = false;
 }

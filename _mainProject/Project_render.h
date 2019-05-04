@@ -33,6 +33,7 @@ struct Shader {
 
 	GLint useTextureLocation;
 	GLint useSkyboxLocation;
+	GLint useFogLocation;
 	GLint useFlashlightLocation;
 	GLint texSamplerLocation;
 };
@@ -84,8 +85,8 @@ struct State {
 	int lastMouseX, lastMouseY;
 	int windowWidth;
 	int windowHeight;
-	bool firstInputMouse;
 	bool useFlashlight;
+	bool useFog;
 	bool keyMap[KEYS_COUNT];
 };
 

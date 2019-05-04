@@ -49,6 +49,7 @@ bool initShaderProgram() {
 	shaderProgram.texSamplerLocation = glGetUniformLocation(shaderProgram.program, "texSampler");
 	shaderProgram.useTextureLocation = glGetUniformLocation(shaderProgram.program, "material.useTexture");
 	shaderProgram.useSkyboxLocation = glGetUniformLocation(shaderProgram.program, "material.useSkybox");
+	shaderProgram.useFogLocation = glGetUniformLocation(shaderProgram.program, "useFog");
 
 	shaderProgram.useFlashlightLocation = glGetUniformLocation(shaderProgram.program, "useFlashlight");
 
@@ -63,8 +64,7 @@ bool initShaderProgram() {
 void initTree(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
-	(*geometry)->texture = 0;
-	(*geometry)->texture = pgr::createTexture("meshes/tree.jpg");
+	(*geometry)->texture = pgr::createTexture("meshes/tree_new.jpg");
 
 	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
 	glBindVertexArray((*geometry)->vertexArrayObject);
@@ -92,10 +92,10 @@ void initTree(Shader &shader, MeshGeometry ** geometry) {
 	glEnableVertexAttribArray(shader.texCoordLocation);
 	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-	(*geometry)->ambient = glm::vec3(0.4f, 0.1f, 0.0f);
-	(*geometry)->diffuse = glm::vec3(0.7f, 0.7f, 0.7f);
-	(*geometry)->specular = glm::vec3(0.6f, 0.3f, 0.3f);
-	(*geometry)->shininess = 1.0f;
+	(*geometry)->ambient = glm::vec3(0.4f, 0.2f, 0.1f);
+	(*geometry)->diffuse = glm::vec3(0.3f, 0.2f, 0.0f);
+	(*geometry)->specular = glm::vec3(0.2f, 0.2f, 0.2f);
+	(*geometry)->shininess =30.0f;
 	(*geometry)->numTriangles = treeNTriangles;
 
 	CHECK_GL_ERROR();
@@ -106,9 +106,7 @@ void initTree(Shader &shader, MeshGeometry ** geometry) {
 void initGround(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
-	(*geometry)->texture = 0;
-	(*geometry)->texture = pgr::createTexture("meshes/grass.png");
-
+	(*geometry)->texture = pgr::createTexture("meshes/grass_new.jpg");
 
 	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
 	glBindVertexArray((*geometry)->vertexArrayObject);
@@ -135,10 +133,10 @@ void initGround(Shader &shader, MeshGeometry ** geometry) {
 	glEnableVertexAttribArray(shader.texCoordLocation);
 	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-	(*geometry)->ambient = glm::vec3(0.5f, 0.6f, 0.2f);
-	(*geometry)->diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
-	(*geometry)->specular = glm::vec3(0.3f, 0.4f, 0.3f);
-	(*geometry)->shininess = 0.5f;
+	(*geometry)->ambient = glm::vec3(0.6f, 0.5f, 0.5f);
+	(*geometry)->diffuse = glm::vec3(0.8f, 0.5f, 0.5f);
+	(*geometry)->specular = glm::vec3(0.1f);
+	(*geometry)->shininess = 1.0f;
 	(*geometry)->numTriangles = groundNTriangles;
 	
 	CHECK_GL_ERROR();
@@ -206,6 +204,9 @@ void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 		false
 	);
 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
 	glBindVertexArray(treeGeometry->vertexArrayObject);
 
 	glDrawElements(GL_TRIANGLES, treeNTriangles * 3, GL_UNSIGNED_INT, 0);
@@ -233,9 +234,12 @@ void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & 
 		false
 	);
 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
 	glBindVertexArray(groundGeometry->vertexArrayObject);
 
-	glDrawElements(GL_TRIANGLES, groundNTriangles * 3, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, groundGeometry->numTriangles * 3, GL_UNSIGNED_INT, 0);
 
 	CHECK_GL_ERROR();
 
@@ -262,7 +266,7 @@ void drawSkybox(Object *skybox, const glm::mat4 & viewMatrix, const glm::mat4 & 
 
 	glBindVertexArray(skyboxGeometry->vertexArrayObject);
 
-	glDrawElements(GL_TRIANGLES, groundNTriangles * 3, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, skyboxNTriangles * 3, GL_UNSIGNED_INT, 0);
 
 	CHECK_GL_ERROR();
 
@@ -278,6 +282,7 @@ void setMaterialUniforms(const glm::vec3 & ambient, const glm::vec3 & diffuse, c
 	glUniform1f(shaderProgram.shininessLocation, shininess);
 	glUniform1f(shaderProgram.useFlashlightLocation, gameState.useFlashlight);
 	glUniform1f(shaderProgram.useSkyboxLocation, useSkybox);
+	glUniform1f(shaderProgram.useFogLocation, gameState.useFog);
 
 	// Set texture
 	if (texture != 0) {
@@ -336,8 +341,8 @@ void cleanMeshes() {
 }
 
 void initModels() {
-	initGround(shaderProgram, &groundGeometry);
 	initTree(shaderProgram, &treeGeometry);
 	initSkybox(shaderProgram, &skyboxGeometry);
+	initGround(shaderProgram, &groundGeometry);
 
 }

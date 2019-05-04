@@ -24,6 +24,7 @@ struct Light {
 };
 
 uniform bool useFlashlight;
+uniform bool useFog;
 uniform mat4 PVMmatrix;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -46,10 +47,9 @@ Light spotlight;
 
 void initSun(){
 	sun.ambient = vec3(0.5f);
-	sun.diffuse = vec3(1.0f, 1.0f, 0.5f);
-	sun.specular = vec3(1.0f);
-	sun.position = (viewMatrix * vec4(0.7, -0.6, 0.3, 0.0)).xyz;
-	sun.direction = (viewMatrix * vec4(0.7, -0.6, 0.9, 0.0)).xyz;
+	sun.diffuse = vec3(1.0f, 0.5f, 0.5f);
+	sun.specular = vec3(2.0f);
+	sun.position = (viewMatrix * vec4(10.0, -10.0, 0.0, 0.0)).xyz;
 }
 
 void initSpotlight(){
@@ -97,13 +97,15 @@ vec4 directionLight(Light light, vec3 vertexPosition, vec3 vertexNormal){
 	// ambient
 	 vec3 ambient = light.ambient * material.ambient;
 
+	 vec3 normal = vertexNormal;
+
 	 // diffuse
 	 vec3 lightPos = normalize(light.position);
-	 float diff = max(dot(vertexNormal, lightPos), 0.0);
+	 float diff = max(dot(normal, lightPos), 0.0);
 	 vec3 diffuse = light.diffuse * material.diffuse * diff;
 
 	 // specular
-	 vec3 refl = reflect(-lightPos, vertexNormal);
+	 vec3 refl = reflect(-lightPos, normal);
 	 vec3 viewPos = normalize(-vertexPosition);
 	 float spec = max(dot(refl, viewPos), 0.0);
 	 vec3 specular = light.specular * material.specular * pow(spec, material.shininess);
@@ -121,18 +123,6 @@ vec4 pointLight(Light light, vec3 vertexPosition, vec3 vertexNormal) {
 	return attenuation * directionLight(light, vertexPosition, vertexNormal);
 }
 
-vec4 sunLight(Light light, vec3 vertexPosition, vec3 vertexNormal){
-
-	vec3 ambient = material.ambient*light.ambient;
-	float X = dot(vertexNormal, light.direction);
-
-	vec3 diffuse = max(X, 0.0f)*material.diffuse*light.diffuse;
-
-	vec3 sum = ambient + diffuse;
-	
-	return vec4(sum, 1.0f);
-}
-
 void main() {
 	initSun();
 	initSpotlight();
@@ -144,7 +134,6 @@ void main() {
 		outColor += spotlightLight(spotlight, eyePos_v, normal_v);
 
 	outColor += directionLight(sun, eyePos_v, normal_v);
-	//outColor += sunLight(sun, eyePos_v, normal_v);
 	
 	if (material.useSkybox){
 		vec2 UV = vec2(texCoord_v.x * 1, texCoord_v.y * 1);
@@ -153,6 +142,18 @@ void main() {
 	else if(material.useTexture){
 		vec2 UV = vec2(texCoord_v.x * 10, texCoord_v.y * 10);
 		outColor *= texture(texSampler, UV).rgb;
+	}
+
+	if (useFog){
+		float fog_end = 30.0;
+		float fog_start = 0.01;
+		vec4  fog_colour = vec4(0.7, 0.7, 0.7, 1.0);
+
+		float dist = length(eyePos_v.xyz);
+		float fog_factor = (fog_end - dist)/(fog_end - fog_start);
+		fog_factor = clamp(fog_factor, 0.0, 1.0);
+
+		outColor = mix(fog_colour, outColor, fog_factor);
 	}
 
 	colorFragment = outColor;
