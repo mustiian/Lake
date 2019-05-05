@@ -38,7 +38,7 @@ void initSun(){
 	sun.ambient = vec3(0.5f);
 	sun.diffuse = vec3(1.0f, 0.3f, 0.3f);
 	sun.specular = vec3(6.0f);
-	sun.position = (viewMatrix * vec4(0.0, 0.0, 0.0, 0.0)).xyz;
+	sun.position = (viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz;
 }
 
 vec4 directionLight(Light light, vec3 vertexPosition, vec3 vertexNormal){

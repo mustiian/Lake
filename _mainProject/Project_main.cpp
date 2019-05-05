@@ -201,6 +201,16 @@ void update(float elapsedTime) {
 	float deltaTime = elapsedTime - gameState.currentTime;
 	gameState.currentTime = elapsedTime;
 	camera.position +=  camera.speed * camera.direction;
+
+	if (elapsedTime - gameState.lastFireColorUpdate > 0.1f) {
+		float min = 0.6f;
+		float max = 1.7f;
+		float randValue = min + (float)(rand() / (float)(RAND_MAX / (max - min)));
+		fireGeometry->ambient = fireColor * randValue;
+		fireGeometry->diffuse = fireColor * randValue;
+		fireGeometry->ambient = fireColor * randValue * 1.5f;
+		gameState.lastFireColorUpdate = elapsedTime;
+	}
 }
 
 void Timer(int value) {
@@ -263,6 +273,7 @@ void setAttr() {
 	gameState.windowWidth = WIN_WIDTH;
 	gameState.windowHeight = WIN_HEIGHT;
 	gameState.elapsedTime = 0.001f * (float)glutGet(GLUT_ELAPSED_TIME);
+	gameState.lastFireColorUpdate = 0.0f;
 
 	camera.position = glm::vec3(0.0f, 1.0f, 0.0f);
 	camera.up = glm::vec3(0.0f, 1.0f, 0.0f);

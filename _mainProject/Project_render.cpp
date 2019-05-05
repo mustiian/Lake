@@ -2,6 +2,7 @@
 #include "Project_render.h"
 
 const char* WIN_TITLE = "Jezero project";
+const glm::vec3 fireColor = glm::vec3(0.8f, 0.3f, 0.0f);
 Camera camera;
 State gameState;
 
@@ -48,6 +49,11 @@ bool initShaderProgram() {
 	shaderProgram.diffuseLocation = glGetUniformLocation(shaderProgram.program, "material.diffuse");
 	shaderProgram.specularLocation = glGetUniformLocation(shaderProgram.program, "material.specular");
 	shaderProgram.shininessLocation = glGetUniformLocation(shaderProgram.program, "material.shininess");
+
+	// fire material
+	shaderProgram.fireAmbientLocation = glGetUniformLocation(shaderProgram.program, "fireAmbient");
+	shaderProgram.fireDiffuseLocation = glGetUniformLocation(shaderProgram.program, "fireDiffuse");
+	shaderProgram.fireSpecularLocation = glGetUniformLocation(shaderProgram.program, "fireSpecular");
 
 	// texture
 	shaderProgram.texSamplerLocation = glGetUniformLocation(shaderProgram.program, "texSampler");
@@ -318,10 +324,10 @@ void initFire(Shader &shader, MeshGeometry ** geometry) {
 	glEnableVertexAttribArray(shader.texCoordLocation);
 	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-	(*geometry)->ambient = glm::vec3(0.9f, 0.9f, 0.9f);
-	(*geometry)->diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
-	(*geometry)->specular = glm::vec3(0.3f, 0.3f, 0.3f);
-	(*geometry)->shininess = 10.0f;
+	(*geometry)->ambient = fireColor;
+	(*geometry)->diffuse = fireColor;
+	(*geometry)->specular = fireColor * 1.5f;
+	(*geometry)->shininess = 1.0f;
 	(*geometry)->numTriangles = fireNTriangles;
 
 	CHECK_GL_ERROR();
@@ -473,11 +479,23 @@ void drawFire(Object *fire, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 
 	glUseProgram(fireShaderProgram.program);
 
+	// Set transform uniforms
+	// Rotation part of the view matrix
+	glm::mat4 viewRotationMatrix = glm::mat4(
+		viewMatrix[0],
+		viewMatrix[1],
+		viewMatrix[2],
+		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+	);
+
+	// Inverse view rotation
+	viewRotationMatrix = glm::transpose(viewRotationMatrix);
+
 	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), fire->position);
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(fire->size, fire->size, fire->size));
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	// Fire will be face to the camera
+	modelMatrix = modelMatrix * viewRotationMatrix;
 
-	// Set transform uniforms
 	glm::mat4 PVM = projectionMatrix * viewMatrix * modelMatrix;
 	glUniformMatrix4fv(fireShaderProgram.PVMmatrixLocation, 1, GL_FALSE, value_ptr(PVM));
 	glUniformMatrix4fv(fireShaderProgram.VmatrixLocation, 1, GL_FALSE, value_ptr(viewMatrix));
@@ -526,6 +544,9 @@ void setMaterialUniforms(const glm::vec3 & ambient, const glm::vec3 & diffuse, c
 	glUniform1i(shaderProgram.useFlashlightLocation, gameState.useFlashlight);
 	glUniform1i(shaderProgram.useSkyboxLocation, useSkybox);
 	glUniform1i(shaderProgram.useFogLocation, gameState.useFog);
+	glUniform3fv(shaderProgram.fireAmbientLocation, 1, glm::value_ptr(fireGeometry->ambient));
+	glUniform3fv(shaderProgram.fireDiffuseLocation, 1, glm::value_ptr(fireGeometry->diffuse));
+	glUniform3fv(shaderProgram.fireSpecularLocation, 1, glm::value_ptr(fireGeometry->specular));
 
 	// Set texture
 	if (texture != 0) {

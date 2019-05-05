@@ -36,6 +36,10 @@ uniform vec3 cameraDirection;
 
 uniform Material material; 
 
+uniform vec3 fireAmbient;
+uniform vec3 fireDiffuse;
+uniform vec3 fireSpecular;
+
 smooth in vec2 texCoord_v; 
 smooth in vec3 eyePos_v; 
 smooth in vec3 normal_v; 
@@ -66,9 +70,9 @@ void initSpotlight(){
 }
 
 void initFireLight(){
-	fireLight.ambient = vec3(0.6f);
-	fireLight.diffuse = vec3(1.0f, 1.0f, 0.7f);
-	fireLight.specular = vec3(1.0f);
+	fireLight.ambient = fireAmbient;
+	fireLight.diffuse = fireDiffuse;
+	fireLight.specular = fireSpecular;
 	fireLight.position = (viewMatrix * vec4(-10.0, -1.0, 0.0, 1.0)).xyz;
 }
 
@@ -125,7 +129,7 @@ vec4 directionLight(Light light, vec3 vertexPosition, vec3 vertexNormal){
 vec4 pointLight(Light light, vec3 vertexPosition, vec3 vertexNormal) {
 
 	float distance = distance(light.position, vertexPosition);
-	float attenuation = 1.0f / (0.5f * distance);
+	float attenuation = 1.0f / (1.5f * distance);
 	return attenuation * directionLight(light, vertexPosition, vertexNormal);
 }
 
@@ -141,7 +145,7 @@ void main() {
 		outColor += spotlightLight(spotlight, eyePos_v, normal_v);
 
 	outColor += directionLight(sun, eyePos_v, normal_v);
-	outColor += pointLight(fireLight, eyePos_v, normal_v);
+	outColor += 4.0 *pointLight(fireLight, eyePos_v, normal_v);
 	
 	if (material.useSkybox){
 		vec2 UV = vec2(texCoord_v.x * 1, texCoord_v.y * 1);

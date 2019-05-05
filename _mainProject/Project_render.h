@@ -12,6 +12,7 @@
 #include <vector>
 
 extern const char* WIN_TITLE;
+extern const glm::vec3 fireColor;
 
 //Shader attrubutes/parametrs locations input
 struct Shader {
@@ -32,6 +33,10 @@ struct Shader {
 	GLint shininessLocation;
 	GLint cameraPositionLocation; // (for flashlight)
 	GLint cameraDirectionLocation; // (for flashlight)
+
+	GLint fireAmbientLocation;
+	GLint fireDiffuseLocation;
+	GLint fireSpecularLocation;
 
 	GLint useTextureLocation;
 	GLint useSkyboxLocation;
@@ -96,7 +101,7 @@ extern void initModels();
 
 struct State {
 	glm::mat4 projectionMatrix;			// projection transform matrix
-	glm::mat4 viewMatrix;					// view transform matrix
+	glm::mat4 viewMatrix;				// view transform matrix
 	int lastMouseX, lastMouseY;
 	int windowWidth;
 	int windowHeight;
@@ -104,6 +109,7 @@ struct State {
 	bool useFog;
 	float elapsedTime;
 	float currentTime;
+	float lastFireColorUpdate;
 	bool keyMap[KEYS_COUNT];
 };
 
