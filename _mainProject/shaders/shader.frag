@@ -44,6 +44,7 @@ out vec4 colorFragment;
 
 Light sun;
 Light spotlight;
+Light fireLight;
 
 void initSun(){
 	sun.ambient = vec3(0.5f);
@@ -55,13 +56,20 @@ void initSun(){
 void initSpotlight(){
 	spotlight.ambient = vec3(1.0f);
 	spotlight.diffuse = vec3(0.5f, 0.5f, 0.5f);
-	spotlight.specular = vec3(1.0);
+	spotlight.specular = vec3(0.0);
 
 	spotlight.position = (viewMatrix * vec4(cameraPosition, 1.0)).xyz;
 	spotlight.direction = normalize((viewMatrix * vec4(cameraDirection, 0.0)).xyz);
 
 	spotlight.spotCosAngle = 0.9f;
 	spotlight.spotExponent = 5.0f;
+}
+
+void initFireLight(){
+	fireLight.ambient = vec3(0.6f);
+	fireLight.diffuse = vec3(1.0f, 1.0f, 0.7f);
+	fireLight.specular = vec3(1.0f);
+	fireLight.position = (viewMatrix * vec4(-10.0, -1.0, 0.0, 1.0)).xyz;
 }
 
 vec4 spotlightLight(Light light, vec3 vertexPosition, vec3 vertexNormal){
@@ -116,16 +124,15 @@ vec4 directionLight(Light light, vec3 vertexPosition, vec3 vertexNormal){
 
 vec4 pointLight(Light light, vec3 vertexPosition, vec3 vertexNormal) {
 
-	float distance = abs(light.position.x - vertexPosition.x) +
-					 abs(light.position.y - vertexPosition.y) + 
-					 abs(light.position.z - vertexPosition.z);
-	float attenuation = 1.0f / (pow(distance, 0.5f));
+	float distance = distance(light.position, vertexPosition);
+	float attenuation = 1.0f / (0.5f * distance);
 	return attenuation * directionLight(light, vertexPosition, vertexNormal);
 }
 
 void main() {
 	initSun();
 	initSpotlight();
+	initFireLight();
 
 	vec3 globalAmbientLight = vec3(0.6f);
 	vec4 outColor = vec4(material.ambient * globalAmbientLight, 0.0);
@@ -134,6 +141,7 @@ void main() {
 		outColor += spotlightLight(spotlight, eyePos_v, normal_v);
 
 	outColor += directionLight(sun, eyePos_v, normal_v);
+	outColor += pointLight(fireLight, eyePos_v, normal_v);
 	
 	if (material.useSkybox){
 		vec2 UV = vec2(texCoord_v.x * 1, texCoord_v.y * 1);

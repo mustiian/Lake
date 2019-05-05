@@ -33,6 +33,7 @@ void DisplayFunc (void) {
 	drawTree(objects.tree, gameState.viewMatrix, gameState.projectionMatrix);
 	drawGround(objects.ground, gameState.viewMatrix, gameState.projectionMatrix);
 	drawWater(objects.water, gameState.viewMatrix, gameState.projectionMatrix);
+	drawFire(objects.fire, gameState.viewMatrix, gameState.projectionMatrix);
 
 	CHECK_GL_ERROR();
 	glutSwapBuffers();
@@ -120,6 +121,7 @@ void clean(void) {
 	delete objects.skybox;
 	delete objects.ground;
 	delete objects.water;
+	delete objects.fire;
 }
 
 void Keyboard(unsigned char key, int mouseX, int mouseY) {
@@ -251,6 +253,12 @@ void setAttr() {
 	objects.water->direction = glm::vec3(0.0f, 0.0f, 0.0f);
 	objects.water->size = 2.0f;
 	objects.water->angle = 0.0f;
+
+	objects.fire = new Object();
+	objects.fire->position = glm::vec3(-10.0f, -1.0f, 0.0f);
+	objects.fire->direction = glm::vec3(0.0f, 0.0f, 0.0f);
+	objects.fire->size = 2.0f;
+	objects.fire->angle = 0.0f;
 
 	gameState.windowWidth = WIN_WIDTH;
 	gameState.windowHeight = WIN_HEIGHT;

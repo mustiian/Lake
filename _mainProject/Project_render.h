@@ -6,6 +6,7 @@
 #include "meshes\ground.h"
 #include "meshes\skybox.h"
 #include "meshes\water.h"
+#include "meshes\fire.h"
 #include "data.h"
 #include <iostream>
 #include <vector>
@@ -66,19 +67,26 @@ struct Objects {
 	Object * ground;
 	Object * skybox;
 	Object * water;
+	Object * fire;
 };
 
 extern bool initShaderProgram();
-extern bool initWaterShaderProgram();
+extern bool initDynamicObjectsShaderProgram(Shader & shaderProgram, const std::string & fragShader, const std::string & vertShader);
 
 extern void initTree(Shader &shader, MeshGeometry ** geometry);
 extern void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
+
 extern void initGround(Shader &shader, MeshGeometry ** geometry);
 extern void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
+
 extern void initSkybox(Shader &shader, MeshGeometry ** geometry);
 extern void drawSkybox(Object *skybox, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
+
 extern void initWater(Shader &shader, MeshGeometry ** geometry);
 extern void drawWater(Object *water, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
+
+extern void initFire(Shader &shader, MeshGeometry ** geometry);
+extern void drawFire(Object *fire, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
 extern void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 extern void setMaterialUniforms(const glm::vec3 &ambient, const glm::vec3 &diffuse, const glm::vec3 &specular, float shininess, GLuint texture, bool useSkybox);
@@ -115,9 +123,11 @@ extern MeshGeometry * treeGeometry;
 extern MeshGeometry * groundGeometry;
 extern MeshGeometry * skyboxGeometry;
 extern MeshGeometry * waterGeometry;
+extern MeshGeometry * fireGeometry;
 
 extern Shader shaderProgram;
 extern Shader waterShaderProgram;
+extern Shader fireShaderProgram;
 extern Objects objects;
 extern Camera camera;
 extern State gameState;

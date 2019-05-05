@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="meshes\fire.cpp" />
     <ClCompile Include="meshes\ground.cpp" />
     <ClCompile Include="meshes\skybox.cpp" />
     <ClCompile Include="meshes\water.cpp" />
@@ -28,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data.h" />
+    <ClInclude Include="meshes\fire.h" />
     <ClInclude Include="meshes\ground.h" />
     <ClInclude Include="meshes\skybox.h" />
     <ClInclude Include="meshes\test.h" />
@@ -35,6 +37,8 @@
     <ClInclude Include="Project_render.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\fire.frag" />
+    <None Include="shaders\fire.vert" />
     <None Include="shaders\shader.frag" />
     <None Include="shaders\shader.vert" />
     <None Include="shaders\water.frag" />
