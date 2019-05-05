@@ -68,16 +68,16 @@ void main() {
 	vec3 globalAmbientLight = vec3(0.6f);
 	vec4 outColor = vec4(material.ambient * globalAmbientLight, 0.0);
 
-	outColor += directionLight(sun, eyePos_v, normal_v);
+	//outColor += directionLight(sun, eyePos_v, normal_v);
 	
 	// Change position of texture 
 	vec2 UV = vec2(texCoord_v.x, texCoord_v.y);
-	float localTime = time;
+	float localTime = time * 1.5;
 	float offsetX = floor( (localTime - floor(localTime)) * 34 ); 
 
 	UV = vec2(UV.x / 34 + offsetX / 34, UV.y);
 
-	outColor *= texture(texSampler, UV);
+	outColor = texture(texSampler, UV);
 
 	if (useFog){
 		float fog_end = 50.0;

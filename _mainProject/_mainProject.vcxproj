@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="meshes\boat.cpp" />
     <ClCompile Include="meshes\fire.cpp" />
     <ClCompile Include="meshes\ground.cpp" />
     <ClCompile Include="meshes\skybox.cpp" />
@@ -29,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data.h" />
+    <ClInclude Include="meshes\boat.h" />
     <ClInclude Include="meshes\fire.h" />
     <ClInclude Include="meshes\ground.h" />
     <ClInclude Include="meshes\skybox.h" />

@@ -32,6 +32,7 @@ void DisplayFunc (void) {
 	drawSkybox(objects.skybox, gameState.viewMatrix, gameState.projectionMatrix);
 	drawTree(objects.tree, gameState.viewMatrix, gameState.projectionMatrix);
 	drawGround(objects.ground, gameState.viewMatrix, gameState.projectionMatrix);
+	drawBoat(objects.boat, gameState.viewMatrix, gameState.projectionMatrix);
 	drawWater(objects.water, gameState.viewMatrix, gameState.projectionMatrix);
 	drawFire(objects.fire, gameState.viewMatrix, gameState.projectionMatrix);
 
@@ -122,6 +123,7 @@ void clean(void) {
 	delete objects.ground;
 	delete objects.water;
 	delete objects.fire;
+	delete objects.boat;
 }
 
 void Keyboard(unsigned char key, int mouseX, int mouseY) {
@@ -204,11 +206,11 @@ void update(float elapsedTime) {
 
 	if (elapsedTime - gameState.lastFireColorUpdate > 0.1f) {
 		float min = 0.6f;
-		float max = 1.7f;
+		float max = 1.2f;
 		float randValue = min + (float)(rand() / (float)(RAND_MAX / (max - min)));
-		fireGeometry->ambient = fireColor * randValue;
-		fireGeometry->diffuse = fireColor * randValue;
-		fireGeometry->ambient = fireColor * randValue * 1.5f;
+		fireAmbient = fireColor * randValue;
+		fireDiffuse = fireColor * randValue;
+		fireSpecular = fireColor * randValue * 1.0f;
 		gameState.lastFireColorUpdate = elapsedTime;
 	}
 }
@@ -269,6 +271,12 @@ void setAttr() {
 	objects.fire->direction = glm::vec3(0.0f, 0.0f, 0.0f);
 	objects.fire->size = 2.0f;
 	objects.fire->angle = 0.0f;
+
+	objects.boat = new Object();
+	objects.boat->position = glm::vec3(10.0f, -1.0f, -5.0f);
+	objects.boat->direction = glm::vec3(0.0f, 0.0f, 0.0f);
+	objects.boat->size = 2.0f;
+	objects.boat->angle = 0.0f;
 
 	gameState.windowWidth = WIN_WIDTH;
 	gameState.windowHeight = WIN_HEIGHT;

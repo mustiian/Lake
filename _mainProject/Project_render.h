@@ -7,12 +7,16 @@
 #include "meshes\skybox.h"
 #include "meshes\water.h"
 #include "meshes\fire.h"
+#include "meshes\boat.h"
 #include "data.h"
 #include <iostream>
 #include <vector>
 
 extern const char* WIN_TITLE;
 extern const glm::vec3 fireColor;
+extern glm::vec3 fireAmbient;
+extern glm::vec3 fireDiffuse;
+extern glm::vec3 fireSpecular;
 
 //Shader attrubutes/parametrs locations input
 struct Shader {
@@ -73,6 +77,7 @@ struct Objects {
 	Object * skybox;
 	Object * water;
 	Object * fire;
+	Object * boat;
 };
 
 extern bool initShaderProgram();
@@ -92,6 +97,9 @@ extern void drawWater(Object *water, const glm::mat4 & viewMatrix, const glm::ma
 
 extern void initFire(Shader &shader, MeshGeometry ** geometry);
 extern void drawFire(Object *fire, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
+
+extern void initBoat(Shader &shader, MeshGeometry ** geometry);
+extern void drawBoat(Object *boat, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
 extern void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 extern void setMaterialUniforms(const glm::vec3 &ambient, const glm::vec3 &diffuse, const glm::vec3 &specular, float shininess, GLuint texture, bool useSkybox);
@@ -130,6 +138,7 @@ extern MeshGeometry * groundGeometry;
 extern MeshGeometry * skyboxGeometry;
 extern MeshGeometry * waterGeometry;
 extern MeshGeometry * fireGeometry;
+extern MeshGeometry * boatGeometry;
 
 extern Shader shaderProgram;
 extern Shader waterShaderProgram;
