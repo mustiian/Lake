@@ -18,6 +18,8 @@ MeshGeometry * skyboxGeometry = NULL;
 MeshGeometry * waterGeometry = NULL;
 MeshGeometry * fireGeometry = NULL;
 MeshGeometry * boatGeometry = NULL;
+MeshGeometry * dockGeometry = NULL;
+MeshGeometry * greenTreeGeometry = NULL;
 Objects objects;
 
 bool initShaderProgram() {
@@ -158,8 +160,8 @@ void initTree(Shader &shader, MeshGeometry ** geometry) {
 
 	(*geometry)->ambient = glm::vec3(0.4f, 0.2f, 0.1f);
 	(*geometry)->diffuse = glm::vec3(0.3f, 0.2f, 0.0f);
-	(*geometry)->specular = glm::vec3(0.2f, 0.2f, 0.2f);
-	(*geometry)->shininess =30.0f;
+	(*geometry)->specular = glm::vec3(0.2f);
+	(*geometry)->shininess =20.0f;
 	(*geometry)->numTriangles = treeNTriangles;
 
 	CHECK_GL_ERROR();
@@ -198,7 +200,7 @@ void initGround(Shader &shader, MeshGeometry ** geometry) {
 	glEnableVertexAttribArray(shader.texCoordLocation);
 	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-	(*geometry)->ambient = glm::vec3(0.6f, 0.5f, 0.5f);
+	(*geometry)->ambient = glm::vec3(0.2f, 0.3f, 0.2f);
 	(*geometry)->diffuse = glm::vec3(0.8f, 0.5f, 0.5f);
 	(*geometry)->specular = glm::vec3(0.1f);
 	(*geometry)->shininess = 1.0f;
@@ -213,7 +215,7 @@ void initSkybox(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
 	(*geometry)->texture = 0;
-	(*geometry)->texture = pgr::createTexture("meshes/skybox.png");
+	(*geometry)->texture = pgr::createTexture("meshes/skybox_new.png");
 
 	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
 	glBindVertexArray((*geometry)->vertexArrayObject);
@@ -283,11 +285,96 @@ void initBoat(Shader &shader, MeshGeometry ** geometry) {
 	glEnableVertexAttribArray(shader.texCoordLocation);
 	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-	(*geometry)->ambient = glm::vec3(0.9f, 0.9f, 0.9f);
+	(*geometry)->ambient = glm::vec3(0.5f, 0.2f, 0.2f);
 	(*geometry)->diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
 	(*geometry)->specular = glm::vec3(0.3f, 0.3f, 0.3f);
 	(*geometry)->shininess = 2.0f;
 	(*geometry)->numTriangles = boatNTriangles;
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+}
+
+void initDock(Shader &shader, MeshGeometry ** geometry) {
+	*geometry = new MeshGeometry;
+
+	(*geometry)->texture = pgr::createTexture("meshes/dock.jpg");
+
+	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
+	glBindVertexArray((*geometry)->vertexArrayObject);
+
+	// Vertex buffer 
+	glGenBuffers(1, &((*geometry)->vertexBufferObject));
+	glBindBuffer(GL_ARRAY_BUFFER, (*geometry)->vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, dockNVertices*dockNAttribsPerVertex * sizeof(float), dockVertices, GL_STATIC_DRAW);
+
+	// Element buffer
+	glGenBuffers(1, &((*geometry)->elementBufferObject));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (*geometry)->elementBufferObject);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * sizeof(unsigned)* dockNTriangles, dockTriangles, GL_STATIC_DRAW);
+
+	// Get position location
+	glEnableVertexAttribArray(shader.positionLocation);
+	glVertexAttribPointer(shader.positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+
+	CHECK_GL_ERROR();
+	// Get normal location
+	glEnableVertexAttribArray(shader.normalLocation);
+	glVertexAttribPointer(shader.normalLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	// Get texture location
+	glEnableVertexAttribArray(shader.texCoordLocation);
+	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+	(*geometry)->ambient = glm::vec3(0.3f, 0.15f, 0.1f);
+	(*geometry)->diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+	(*geometry)->specular = glm::vec3(0.8f, 0.6f, 0.6f);
+	(*geometry)->shininess = 32.0f;
+	(*geometry)->numTriangles = dockNTriangles;
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+}
+
+void initGreenTree(Shader &shader, MeshGeometry ** geometry) {
+	*geometry = new MeshGeometry;
+
+	(*geometry)->texture = 0;
+	(*geometry)->texture = pgr::createTexture("meshes/greenTree.jpg");
+
+	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
+	glBindVertexArray((*geometry)->vertexArrayObject);
+
+	// Vertex buffer 
+	glGenBuffers(1, &((*geometry)->vertexBufferObject));
+	glBindBuffer(GL_ARRAY_BUFFER, (*geometry)->vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, green_treeNVertices * green_treeNAttribsPerVertex * sizeof(float), green_treeVertices, GL_STATIC_DRAW);
+
+	// Element buffer
+	glGenBuffers(1, &((*geometry)->elementBufferObject));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (*geometry)->elementBufferObject);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * sizeof(unsigned)* green_treeNTriangles, green_treeTriangles, GL_STATIC_DRAW);
+
+	// Get position location
+	glEnableVertexAttribArray(shader.positionLocation);
+	glVertexAttribPointer(shader.positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+
+	CHECK_GL_ERROR();
+	// Get normal location
+	glEnableVertexAttribArray(shader.normalLocation);
+	glVertexAttribPointer(shader.normalLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	// Get texture location
+	glEnableVertexAttribArray(shader.texCoordLocation);
+	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+	(*geometry)->ambient = glm::vec3(0.4f, 0.2f, 0.1f);
+	(*geometry)->diffuse = glm::vec3(0.5f, 0.3f, 0.0f);
+	(*geometry)->specular = glm::vec3(0.5f);
+	(*geometry)->shininess = 10.0f;
+	(*geometry)->numTriangles = green_treeNTriangles;
 
 	CHECK_GL_ERROR();
 
@@ -416,7 +503,7 @@ void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & 
 
 	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), ground->position);
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(ground->size, ground->size, ground->size));
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(270.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	setTransform(modelMatrix, viewMatrix, projectionMatrix);
 	setMaterialUniforms(
@@ -474,6 +561,7 @@ void drawBoat(Object *boat, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), boat->position);
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(boat->size, boat->size, boat->size));
 	modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(objects.boat->angle), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	setTransform(modelMatrix, viewMatrix, projectionMatrix);
 	setMaterialUniforms(
@@ -491,6 +579,65 @@ void drawBoat(Object *boat, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glBindVertexArray(boatGeometry->vertexArrayObject);
 
 	glDrawElements(GL_TRIANGLES, boatGeometry->numTriangles * 3, GL_UNSIGNED_INT, 0);
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+
+void drawDock(Object *dock, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
+	glUseProgram(shaderProgram.program);
+
+	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), dock->position);
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(dock->size, dock->size, dock->size));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(270.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	setTransform(modelMatrix, viewMatrix, projectionMatrix);
+	setMaterialUniforms(
+		dockGeometry->ambient,
+		dockGeometry->diffuse,
+		dockGeometry->specular,
+		dockGeometry->shininess,
+		dockGeometry->texture,
+		false
+	);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindVertexArray(dockGeometry->vertexArrayObject);
+
+	glDrawElements(GL_TRIANGLES, dockGeometry->numTriangles * 3, GL_UNSIGNED_INT, 0);
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+
+
+void drawGreenTree(Object *greenTree, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
+	glUseProgram(shaderProgram.program);
+
+	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), greenTree->position);
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(greenTree->size, greenTree->size, greenTree->size));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+	setTransform(modelMatrix, viewMatrix, projectionMatrix);
+	setMaterialUniforms(
+		greenTreeGeometry->ambient,
+		greenTreeGeometry->diffuse,
+		greenTreeGeometry->specular,
+		greenTreeGeometry->shininess,
+		greenTreeGeometry->texture,
+		false
+	);
+
+	glBindVertexArray(greenTreeGeometry->vertexArrayObject);
+
+	glDrawElements(GL_TRIANGLES, greenTreeGeometry->numTriangles * 3, GL_UNSIGNED_INT, 0);
 
 	CHECK_GL_ERROR();
 
@@ -680,6 +827,8 @@ void cleanMeshes() {
 	deleteGeometry(waterGeometry);
 	deleteGeometry(fireGeometry);
 	deleteGeometry(boatGeometry);
+	deleteGeometry(dockGeometry);
+	deleteGeometry(greenTreeGeometry);
 	pgr::deleteProgramAndShaders(shaderProgram.program);
 	pgr::deleteProgramAndShaders(waterShaderProgram.program);
 	pgr::deleteProgramAndShaders(fireShaderProgram.program);
@@ -692,4 +841,6 @@ void initModels() {
 	initWater(waterShaderProgram, &waterGeometry);
 	initFire(fireShaderProgram, &fireGeometry);
 	initBoat(shaderProgram, &boatGeometry);
+	initDock(shaderProgram, &dockGeometry);
+	initGreenTree(shaderProgram, &greenTreeGeometry);
 }

@@ -20,7 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="meshes\boat.cpp" />
+    <ClCompile Include="meshes\dock.cpp" />
     <ClCompile Include="meshes\fire.cpp" />
+    <ClCompile Include="meshes\greenTree.cpp" />
     <ClCompile Include="meshes\ground.cpp" />
     <ClCompile Include="meshes\skybox.cpp" />
     <ClCompile Include="meshes\water.cpp" />
@@ -31,7 +33,9 @@
   <ItemGroup>
     <ClInclude Include="data.h" />
     <ClInclude Include="meshes\boat.h" />
+    <ClInclude Include="meshes\dock.h" />
     <ClInclude Include="meshes\fire.h" />
+    <ClInclude Include="meshes\greenTree.h" />
     <ClInclude Include="meshes\ground.h" />
     <ClInclude Include="meshes\skybox.h" />
     <ClInclude Include="meshes\test.h" />

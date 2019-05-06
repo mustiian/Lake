@@ -54,7 +54,7 @@ void initSun(){
 	sun.ambient = vec3(0.5f);
 	sun.diffuse = vec3(1.0f, 0.5f, 0.5f);
 	sun.specular = vec3(2.0f);
-	sun.position = (viewMatrix * vec4(10.0, -10.0, 0.0, 0.0)).xyz;
+	sun.position = (viewMatrix * vec4(-100.0, 100.0, -100.0, 0.0)).xyz;
 }
 
 void initSpotlight(){
@@ -73,7 +73,7 @@ void initFireLight(){
 	fireLight.ambient = fireAmbient;
 	fireLight.diffuse = fireDiffuse;
 	fireLight.specular = fireSpecular;
-	fireLight.position = (viewMatrix * vec4(-10.0, -1.0, 0.0, 1.0)).xyz;
+	fireLight.position = (viewMatrix * vec4(80.0f, -1.0f, 90.0f, 1.0)).xyz;
 }
 
 vec4 spotlightLight(Light light, vec3 vertexPosition, vec3 vertexNormal){
@@ -152,7 +152,7 @@ void main() {
 		outColor = texture(texSampler, UV);
 	}
 	else if(material.useTexture){
-		vec2 UV = vec2(texCoord_v.x * 10, texCoord_v.y * 10);
+		vec2 UV = vec2(texCoord_v.x * 1, texCoord_v.y * 1);
 		outColor *= texture(texSampler, UV).rgb;
 	}
 

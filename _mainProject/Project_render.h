@@ -8,6 +8,8 @@
 #include "meshes\water.h"
 #include "meshes\fire.h"
 #include "meshes\boat.h"
+#include "meshes\dock.h"
+#include "meshes\greenTree.h"
 #include "data.h"
 #include <iostream>
 #include <vector>
@@ -78,6 +80,35 @@ struct Objects {
 	Object * water;
 	Object * fire;
 	Object * boat;
+	Object * dock;
+	std::vector <Object *> greenTrees;
+};
+
+struct State {
+	glm::mat4 projectionMatrix;			// projection transform matrix
+	glm::mat4 viewMatrix;				// view transform matrix
+	int windowWidth;
+	int windowHeight;
+	bool useFlashlight;
+	bool useFog;
+	bool useBoat;
+	float elapsedTime;
+	float currentTime;
+	float lastFireColorUpdate;
+	bool keyMap[KEYS_COUNT];
+};
+
+struct Camera {
+	bool firstView;
+	bool secondView;
+	bool freeCamera;
+	glm::vec3 position;
+	glm::vec3 direction;
+	glm::vec3 center;
+	glm::vec3 up;
+	float speed;
+	float elevationAngle;
+	float viewAngle;
 };
 
 extern bool initShaderProgram();
@@ -101,37 +132,17 @@ extern void drawFire(Object *fire, const glm::mat4 & viewMatrix, const glm::mat4
 extern void initBoat(Shader &shader, MeshGeometry ** geometry);
 extern void drawBoat(Object *boat, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
+extern void initDock(Shader &shader, MeshGeometry ** geometry);
+extern void drawDock(Object *dock, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
+
+extern void initGreenTree(Shader &shader, MeshGeometry ** geometry);
+extern void drawGreenTree(Object *dock, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
+
 extern void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 extern void setMaterialUniforms(const glm::vec3 &ambient, const glm::vec3 &diffuse, const glm::vec3 &specular, float shininess, GLuint texture, bool useSkybox);
 extern void deleteGeometry(MeshGeometry *geometry);
 extern void cleanMeshes();
 extern void initModels();
-
-struct State {
-	glm::mat4 projectionMatrix;			// projection transform matrix
-	glm::mat4 viewMatrix;				// view transform matrix
-	int lastMouseX, lastMouseY;
-	int windowWidth;
-	int windowHeight;
-	bool useFlashlight;
-	bool useFog;
-	float elapsedTime;
-	float currentTime;
-	float lastFireColorUpdate;
-	bool keyMap[KEYS_COUNT];
-};
-
-struct Camera {
-	bool staticView;
-	bool freeCamera;
-	glm::vec3 position;
-	glm::vec3 direction;
-	glm::vec3 center;
-	glm::vec3 up;
-	float speed;
-	float elevationAngle;
-	float viewAngle;
-};
 
 extern MeshGeometry * treeGeometry;
 extern MeshGeometry * groundGeometry;
@@ -139,6 +150,8 @@ extern MeshGeometry * skyboxGeometry;
 extern MeshGeometry * waterGeometry;
 extern MeshGeometry * fireGeometry;
 extern MeshGeometry * boatGeometry;
+extern MeshGeometry * dockGeometry;
+extern MeshGeometry * greenTreeGeometry;
 
 extern Shader shaderProgram;
 extern Shader waterShaderProgram;

@@ -1,1 +1,0 @@
-Skybox: https://www.kisspng.com/png-sven-co-op-skybox-forest-texture-mapping-forrest-744070/
