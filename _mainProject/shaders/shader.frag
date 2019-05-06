@@ -53,7 +53,7 @@ Light fireLight;
 void initSun(){
 	sun.ambient = vec3(0.5f);
 	sun.diffuse = vec3(1.0f, 0.5f, 0.5f);
-	sun.specular = vec3(2.0f);
+	sun.specular = vec3(1.0f);
 	sun.position = (viewMatrix * vec4(-100.0, 100.0, -100.0, 0.0)).xyz;
 }
 
@@ -138,7 +138,7 @@ void main() {
 	initSpotlight();
 	initFireLight();
 
-	vec3 globalAmbientLight = vec3(0.6f);
+	vec3 globalAmbientLight = vec3(0.4f);
 	vec4 outColor = vec4(material.ambient * globalAmbientLight, 0.0);
 
 	if (useFlashlight)

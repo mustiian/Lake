@@ -25,6 +25,7 @@
     <ClCompile Include="meshes\greenTree.cpp" />
     <ClCompile Include="meshes\ground.cpp" />
     <ClCompile Include="meshes\skybox.cpp" />
+    <ClCompile Include="meshes\sticks.cpp" />
     <ClCompile Include="meshes\water.cpp" />
     <ClCompile Include="Project_render.cpp" />
     <ClCompile Include="test.cpp" />
@@ -38,6 +39,7 @@
     <ClInclude Include="meshes\greenTree.h" />
     <ClInclude Include="meshes\ground.h" />
     <ClInclude Include="meshes\skybox.h" />
+    <ClInclude Include="meshes\sticks.h" />
     <ClInclude Include="meshes\test.h" />
     <ClInclude Include="meshes\water.h" />
     <ClInclude Include="Project_render.h" />

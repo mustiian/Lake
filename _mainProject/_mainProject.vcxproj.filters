@@ -48,6 +48,9 @@
     <ClCompile Include="meshes\greenTree.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="meshes\sticks.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data.h">
@@ -78,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="meshes\greenTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\sticks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,7 +1,17 @@
+//----------------------------------------------------------------------------------------
+/**
+* \file       Project_render.cpp
+* \author     Ian Mustiats
+* \date       07.05.2019
+*/
+//----------------------------------------------------------------------------------------
+
+
 #include "pgr.h"
 #include "Project_render.h"
 
 const char* WIN_TITLE = "Jezero project";
+
 const glm::vec3 fireColor = glm::vec3(0.8f, 0.3f, 0.0f);
 glm::vec3 fireAmbient = fireColor;
 glm::vec3 fireDiffuse = fireColor;
@@ -20,8 +30,12 @@ MeshGeometry * fireGeometry = NULL;
 MeshGeometry * boatGeometry = NULL;
 MeshGeometry * dockGeometry = NULL;
 MeshGeometry * greenTreeGeometry = NULL;
+MeshGeometry * sticksGeometry = NULL;
 Objects objects;
 
+/*
+ Initializes all parametrs of the main shader
+*/
 bool initShaderProgram() {
 	std::vector<GLuint> shaders;
 
@@ -79,14 +93,24 @@ bool initShaderProgram() {
 		return false;
 	}
 
-	if (!initDynamicObjectsShaderProgram(fireShaderProgram, "shaders/fire.frag", "shaders/fire.vert")) {
+	if (!initFireShaderProgram(fireShaderProgram, "shaders/fire.frag", "shaders/fire.vert")) {
 		std::cout << "Can't init fire shader program" << std::endl;
 		return false;
 	}
 
 	return true;
 }
-bool initDynamicObjectsShaderProgram(Shader & shaderPGR, const std::string & fragShader, const std::string & vertShader ) {
+
+/*
+ Initializes all parametrs of the shader with dynamic texture
+
+ \param[out] shaderProgram		Shader object
+ \param[in] fragShader			Path to the fragment shader file
+ \param[in] vertShader			Path to the vertex shader file
+
+ \return true if the shader was initialized
+*/
+bool initDynamicObjectsShaderProgram(Shader & shaderPRG, const std::string & fragShader, const std::string & vertShader ) {
 	std::vector<GLuint> shaders;
 
 	shaders.push_back(pgr::createShaderFromFile(GL_VERTEX_SHADER, vertShader));
@@ -96,37 +120,88 @@ bool initDynamicObjectsShaderProgram(Shader & shaderPGR, const std::string & fra
 		return false;
 	}
 
-	shaderPGR.program = pgr::createProgram(shaders);
-	if (shaderPGR.program == 0) {
+	shaderPRG.program = pgr::createProgram(shaders);
+	if (shaderPRG.program == 0) {
 		std::cout << "Can't create shader program" << std::endl;
 		return false;
 	}
 
 	// vertex attr
-	shaderPGR.positionLocation = glGetAttribLocation(shaderPGR.program, "position");
-	shaderPGR.normalLocation = glGetAttribLocation(shaderPGR.program, "normal");
-	shaderPGR.texCoordLocation = glGetAttribLocation(shaderPGR.program, "texCoord");
+	shaderPRG.positionLocation = glGetAttribLocation(shaderPRG.program, "position");
+	shaderPRG.normalLocation = glGetAttribLocation(shaderPRG.program, "normal");
+	shaderPRG.texCoordLocation = glGetAttribLocation(shaderPRG.program, "texCoord");
 
 	// vertex uniforms
-	shaderPGR.PVMmatrixLocation = glGetUniformLocation(shaderPGR.program, "PVMmatrix");
-	shaderPGR.MmatrixLocation = glGetUniformLocation(shaderPGR.program, "modelMatrix");
-	shaderPGR.VmatrixLocation = glGetUniformLocation(shaderPGR.program, "viewMatrix");
-	shaderPGR.normalMatrixLocation = glGetUniformLocation(shaderPGR.program, "normalMatrix");
+	shaderPRG.PVMmatrixLocation = glGetUniformLocation(shaderPRG.program, "PVMmatrix");
+	shaderPRG.MmatrixLocation = glGetUniformLocation(shaderPRG.program, "modelMatrix");
+	shaderPRG.VmatrixLocation = glGetUniformLocation(shaderPRG.program, "viewMatrix");
+	shaderPRG.normalMatrixLocation = glGetUniformLocation(shaderPRG.program, "normalMatrix");
 
 	// material
-	shaderPGR.ambientLocation = glGetUniformLocation(shaderPGR.program, "material.ambient");
-	shaderPGR.diffuseLocation = glGetUniformLocation(shaderPGR.program, "material.diffuse");
-	shaderPGR.specularLocation = glGetUniformLocation(shaderPGR.program, "material.specular");
-	shaderPGR.shininessLocation = glGetUniformLocation(shaderPGR.program, "material.shininess");
+	shaderPRG.ambientLocation = glGetUniformLocation(shaderPRG.program, "material.ambient");
+	shaderPRG.diffuseLocation = glGetUniformLocation(shaderPRG.program, "material.diffuse");
+	shaderPRG.specularLocation = glGetUniformLocation(shaderPRG.program, "material.specular");
+	shaderPRG.shininessLocation = glGetUniformLocation(shaderPRG.program, "material.shininess");
 
 	// texture
-	shaderPGR.texSamplerLocation = glGetUniformLocation(shaderPGR.program, "texSampler");
-	shaderPGR.timeLocation = glGetUniformLocation(shaderPGR.program, "time");
-	shaderPGR.useFogLocation = glGetUniformLocation(shaderPGR.program, "useFog");
+	shaderPRG.texSamplerLocation = glGetUniformLocation(shaderPRG.program, "texSampler");
+	shaderPRG.timeLocation = glGetUniformLocation(shaderPRG.program, "time");
+	shaderPRG.useFogLocation = glGetUniformLocation(shaderPRG.program, "useFog");
 
 	return true;
 }
 
+/*
+ Initializes all parametrs of the fire shader
+
+ \param[out] shaderProgram		Shader object
+ \param[in] fragShader			Path to the fragment shader file
+ \param[in] vertShader			Path to the vertex shader file
+
+ \return true if the shader was initialized
+*/
+bool initFireShaderProgram(Shader & shaderPRG, const std::string & fragShader, const std::string & vertShader) {
+	std::vector<GLuint> shaders;
+
+	shaders.push_back(pgr::createShaderFromFile(GL_VERTEX_SHADER, vertShader));
+	shaders.push_back(pgr::createShaderFromFile(GL_FRAGMENT_SHADER, fragShader));
+	if (shaders.size() != 2) {
+		std::cout << "Can't load shaders files" << std::endl;
+		return false;
+	}
+
+	shaderPRG.program = pgr::createProgram(shaders);
+	if (shaderPRG.program == 0) {
+		std::cout << "Can't create shader program" << std::endl;
+		return false;
+	}
+
+	// vertex attr
+	shaderPRG.positionLocation = glGetAttribLocation(shaderPRG.program, "position");
+	shaderPRG.texCoordLocation = glGetAttribLocation(shaderPRG.program, "texCoord");
+
+	// vertex uniforms
+	shaderPRG.PVMmatrixLocation = glGetUniformLocation(shaderPRG.program, "PVMmatrix");
+	shaderPRG.MmatrixLocation = glGetUniformLocation(shaderPRG.program, "modelMatrix");
+	shaderPRG.VmatrixLocation = glGetUniformLocation(shaderPRG.program, "viewMatrix");
+
+	// material
+	shaderPRG.ambientLocation = glGetUniformLocation(shaderPRG.program, "material.ambient");
+
+	// texture
+	shaderPRG.texSamplerLocation = glGetUniformLocation(shaderPRG.program, "texSampler");
+	shaderPRG.timeLocation = glGetUniformLocation(shaderPRG.program, "time");
+	shaderPRG.useFogLocation = glGetUniformLocation(shaderPRG.program, "useFog");
+
+	return true;
+}
+
+/*
+ Initializes the geometry of the tree
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
 void initTree(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
@@ -169,6 +244,12 @@ void initTree(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
+/*
+ Initializes the geometry of the ground
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
 void initGround(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
@@ -211,6 +292,60 @@ void initGround(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
+/*
+ Initializes the geometry of the sticks for the fire
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
+void initSticks(Shader &shader, MeshGeometry ** geometry) {
+	*geometry = new MeshGeometry;
+
+	(*geometry)->texture = pgr::createTexture("meshes/tree_new.jpg");
+
+	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
+	glBindVertexArray((*geometry)->vertexArrayObject);
+
+	// Vertex buffer 
+	glGenBuffers(1, &((*geometry)->vertexBufferObject));
+	glBindBuffer(GL_ARRAY_BUFFER, (*geometry)->vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sticksNVertices * sticksNAttribsPerVertex * sizeof(float), sticksVertices, GL_STATIC_DRAW);
+
+	// Element buffer
+	glGenBuffers(1, &((*geometry)->elementBufferObject));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (*geometry)->elementBufferObject);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * sizeof(unsigned)* sticksNTriangles, sticksTriangles, GL_STATIC_DRAW);
+
+	// Get position location
+	glEnableVertexAttribArray(shader.positionLocation);
+	glVertexAttribPointer(shader.positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+
+	CHECK_GL_ERROR();
+	// Get normal location
+	glEnableVertexAttribArray(shader.normalLocation);
+	glVertexAttribPointer(shader.normalLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	// Get texture location
+	glEnableVertexAttribArray(shader.texCoordLocation);
+	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+	(*geometry)->ambient = glm::vec3(0.4f, 0.1f, 0.1f);
+	(*geometry)->diffuse = glm::vec3(0.3f, 0.2f, 0.0f);
+	(*geometry)->specular = glm::vec3(0.2f);
+	(*geometry)->shininess = 2.0f;
+	(*geometry)->numTriangles = sticksNTriangles;
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+}
+
+/*
+ Initializes the geometry of the skybox
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
 void initSkybox(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
@@ -254,6 +389,12 @@ void initSkybox(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
+/*
+ Initializes the geometry of the boat
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
 void initBoat(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
@@ -296,6 +437,12 @@ void initBoat(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
+/*
+ Initializes the geometry of the dock
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
 void initDock(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
@@ -338,6 +485,12 @@ void initDock(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
+/*
+ Initializes the geometry of the green tree
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
 void initGreenTree(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
@@ -373,7 +526,7 @@ void initGreenTree(Shader &shader, MeshGeometry ** geometry) {
 	(*geometry)->ambient = glm::vec3(0.4f, 0.2f, 0.1f);
 	(*geometry)->diffuse = glm::vec3(0.5f, 0.3f, 0.0f);
 	(*geometry)->specular = glm::vec3(0.5f);
-	(*geometry)->shininess = 10.0f;
+	(*geometry)->shininess = 2.0f;
 	(*geometry)->numTriangles = green_treeNTriangles;
 
 	CHECK_GL_ERROR();
@@ -381,6 +534,12 @@ void initGreenTree(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
+/*
+ Initializes the geometry of the water
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
 void initWater(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
@@ -423,6 +582,12 @@ void initWater(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
+/*
+ Initializes the geometry of the fire
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
 void initFire(Shader &shader, MeshGeometry ** geometry) {
 	*geometry = new MeshGeometry;
 
@@ -449,9 +614,6 @@ void initFire(Shader &shader, MeshGeometry ** geometry) {
 	glVertexAttribPointer(shader.positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
 
 	CHECK_GL_ERROR();
-	// Get normal location
-	glEnableVertexAttribArray(shader.normalLocation);
-	glVertexAttribPointer(shader.normalLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 
 	// Get texture location
 	glEnableVertexAttribArray(shader.texCoordLocation);
@@ -468,6 +630,13 @@ void initFire(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
+/*
+ Draw the tree
+
+ \param[in] tree			 Tree object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
 void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 	glUseProgram(shaderProgram.program);
 
@@ -498,6 +667,13 @@ void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glUseProgram(0);
 }
 
+/*
+ Draw the ground
+
+ \param[in] ground			 Ground object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
 void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 	glUseProgram(shaderProgram.program);
 
@@ -528,6 +704,50 @@ void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & 
 	glUseProgram(0);
 }
 
+/*
+ Draw sticks for the fire
+
+ \param[in] tree			 Sticks object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
+void drawSticks(Object *sticks, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
+	glUseProgram(shaderProgram.program);
+
+	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), sticks->position);
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(sticks->size, sticks->size, sticks->size));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+	setTransform(modelMatrix, viewMatrix, projectionMatrix);
+	setMaterialUniforms(
+		sticksGeometry->ambient,
+		sticksGeometry->diffuse,
+		sticksGeometry->specular,
+		sticksGeometry->shininess,
+		sticksGeometry->texture,
+		false
+	);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindVertexArray(sticksGeometry->vertexArrayObject);
+
+	glDrawElements(GL_TRIANGLES, sticksGeometry->numTriangles * 3, GL_UNSIGNED_INT, 0);
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+
+/*
+ Draw the skybox
+
+ \param[in] skybox			 Skybox object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
 void drawSkybox(Object *skybox, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 	glUseProgram(shaderProgram.program);
 
@@ -555,6 +775,13 @@ void drawSkybox(Object *skybox, const glm::mat4 & viewMatrix, const glm::mat4 & 
 	glUseProgram(0);
 }
 
+/*
+ Draw the boat
+
+ \param[in] tree			 Boat object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
 void drawBoat(Object *boat, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 	glUseProgram(shaderProgram.program);
 
@@ -586,6 +813,13 @@ void drawBoat(Object *boat, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glUseProgram(0);
 }
 
+/*
+ Draw the dock
+
+ \param[in] tree			 Dock object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
 void drawDock(Object *dock, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 	glUseProgram(shaderProgram.program);
 
@@ -617,7 +851,13 @@ void drawDock(Object *dock, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glUseProgram(0);
 }
 
+/*
+ Draw the green tree
 
+ \param[in] tree			 Green tree object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
 void drawGreenTree(Object *greenTree, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 	glUseProgram(shaderProgram.program);
 
@@ -645,6 +885,13 @@ void drawGreenTree(Object *greenTree, const glm::mat4 & viewMatrix, const glm::m
 	glUseProgram(0);
 }
 
+/*
+ Draw the water
+
+ \param[in] tree			 Water object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
 void drawWater(Object *water, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 	glUseProgram(waterShaderProgram.program);
 
@@ -695,6 +942,13 @@ void drawWater(Object *water, const glm::mat4 & viewMatrix, const glm::mat4 & pr
 	glUseProgram(0);
 }
 
+/*
+ Draw the fire
+
+ \param[in] tree			 Fire object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
 void drawFire(Object *fire, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 
 	glEnable(GL_BLEND);
@@ -724,20 +978,9 @@ void drawFire(Object *fire, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glUniformMatrix4fv(fireShaderProgram.VmatrixLocation, 1, GL_FALSE, value_ptr(viewMatrix));
 	glUniformMatrix4fv(fireShaderProgram.MmatrixLocation, 1, GL_FALSE, value_ptr(modelMatrix));
 
-	glm::mat4 modelRotationMatrix = glm::mat4(
-		modelMatrix[0],
-		modelMatrix[1],
-		modelMatrix[2],
-		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
-	);
-	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelRotationMatrix));
-	glUniformMatrix4fv(fireShaderProgram.normalMatrixLocation, 1, GL_FALSE, value_ptr(normalMatrix));
-
 	// Set material uniforms
-	glUniform3fv(fireShaderProgram.diffuseLocation, 1, glm::value_ptr(fireGeometry->diffuse));
 	glUniform3fv(fireShaderProgram.ambientLocation, 1, glm::value_ptr(fireGeometry->ambient));
-	glUniform3fv(fireShaderProgram.specularLocation, 1, glm::value_ptr(fireGeometry->specular));
-	glUniform1f(fireShaderProgram.shininessLocation, fireGeometry->shininess);
+
 	glUniform1i(fireShaderProgram.useFogLocation, gameState.useFog);
 
 	// Set texture
@@ -758,6 +1001,16 @@ void drawFire(Object *fire, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glUseProgram(0);
 }
 
+/*
+ Sets the material uniforms to the shader
+
+\param[in] ambient			Model matrix
+\param[in] diffuse			View matrix
+\param[in] specular			Material specular
+\param[in] shininess		Material shininess
+\param[in] texture			Texture location
+\param[in] useSkybox		Use skybox
+*/
 void setMaterialUniforms(const glm::vec3 & ambient, const glm::vec3 & diffuse, const glm::vec3 & specular, float shininess, GLuint texture, bool useSkybox) {
 	// Set uniforms
 	glUniform3fv(shaderProgram.diffuseLocation, 1, glm::value_ptr(diffuse));
@@ -784,6 +1037,13 @@ void setMaterialUniforms(const glm::vec3 & ambient, const glm::vec3 & diffuse, c
 	CHECK_GL_ERROR();
 }
 
+/*
+ Sets the transforms uniforms to the shader
+
+\param[in] modelMatrix			Model matrix
+\param[in] viewMatrix			View matrix
+\param[in] projectionMatrix		Projection matrix
+*/
 void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
 	// Set transform attributes
 	glm::mat4 PVM = projectionMatrix * viewMatrix * modelMatrix;
@@ -800,10 +1060,9 @@ void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMatrix, c
 	);
 	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelRotationMatrix));
 
-	//glm::mat4 normMatrix = glm::transpose(glm::inverse(modelMatrix));
 	glUniformMatrix4fv(shaderProgram.normalMatrixLocation, 1, GL_FALSE, value_ptr(normalMatrix));
 
-	// Camera
+	// set camera transform
 	glUniform3fv(shaderProgram.cameraPositionLocation, 1, glm::value_ptr(camera.position));
 
 	glm::vec3 cameraViewDirection = camera.direction;
@@ -814,12 +1073,20 @@ void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMatrix, c
 	glUniform3fv(shaderProgram.cameraDirectionLocation, 1, glm::value_ptr(cameraViewDirection));
 }
 
+/*
+ Deletes geometry
+
+ \param[in] geometry	Geometry object
+*/
 void deleteGeometry(MeshGeometry *geometry) {
 	glDeleteVertexArrays(1, &geometry->vertexArrayObject);
 	glDeleteBuffers(1, &geometry->vertexBufferObject);
 	glDeleteBuffers(1, &geometry->elementBufferObject);
 }
 
+/*
+ Deletes all meshes in the scene
+*/
 void cleanMeshes() {
 	deleteGeometry(treeGeometry);
 	deleteGeometry(groundGeometry);
@@ -829,11 +1096,15 @@ void cleanMeshes() {
 	deleteGeometry(boatGeometry);
 	deleteGeometry(dockGeometry);
 	deleteGeometry(greenTreeGeometry);
+	deleteGeometry(sticksGeometry);
 	pgr::deleteProgramAndShaders(shaderProgram.program);
 	pgr::deleteProgramAndShaders(waterShaderProgram.program);
 	pgr::deleteProgramAndShaders(fireShaderProgram.program);
 }
 
+/*
+ Initializes all models in the scene
+*/
 void initModels() {
 	initTree(shaderProgram, &treeGeometry);
 	initSkybox(shaderProgram, &skyboxGeometry);
@@ -843,4 +1114,5 @@ void initModels() {
 	initBoat(shaderProgram, &boatGeometry);
 	initDock(shaderProgram, &dockGeometry);
 	initGreenTree(shaderProgram, &greenTreeGeometry);
+	initSticks(shaderProgram, &sticksGeometry);
 }
