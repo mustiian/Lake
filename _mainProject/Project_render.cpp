@@ -6,19 +6,17 @@
 */
 //----------------------------------------------------------------------------------------
 
-
-#include "pgr.h"
 #include "Project_render.h"
 
+/// Window title
 const char* WIN_TITLE = "Jezero project";
 
 const glm::vec3 fireColor = glm::vec3(0.8f, 0.3f, 0.0f);
 glm::vec3 fireAmbient = fireColor;
 glm::vec3 fireDiffuse = fireColor;
 glm::vec3 fireSpecular = fireColor;
-Camera camera;
-State gameState;
 
+/// Main shader
 Shader shaderProgram;
 Shader waterShaderProgram;
 Shader fireShaderProgram;
@@ -31,9 +29,15 @@ MeshGeometry * boatGeometry = NULL;
 MeshGeometry * dockGeometry = NULL;
 MeshGeometry * greenTreeGeometry = NULL;
 MeshGeometry * sticksGeometry = NULL;
-Objects objects;
 
-/*
+/// All objects
+Objects objects;
+/// Main camera
+Camera camera;
+/// State of the scene
+State gameState;
+
+/**
  Initializes all parametrs of the main shader
 */
 bool initShaderProgram() {
@@ -101,7 +105,7 @@ bool initShaderProgram() {
 	return true;
 }
 
-/*
+/**
  Initializes all parametrs of the shader with dynamic texture
 
  \param[out] shaderProgram		Shader object
@@ -151,7 +155,7 @@ bool initDynamicObjectsShaderProgram(Shader & shaderPRG, const std::string & fra
 	return true;
 }
 
-/*
+/**
  Initializes all parametrs of the fire shader
 
  \param[out] shaderProgram		Shader object
@@ -196,7 +200,7 @@ bool initFireShaderProgram(Shader & shaderPRG, const std::string & fragShader, c
 	return true;
 }
 
-/*
+/**
  Initializes the geometry of the tree
 
  \param[in] shader			Shader object
@@ -244,7 +248,7 @@ void initTree(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
-/*
+/**
  Initializes the geometry of the ground
 
  \param[in] shader			Shader object
@@ -292,7 +296,7 @@ void initGround(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
-/*
+/**
  Initializes the geometry of the sticks for the fire
 
  \param[in] shader			Shader object
@@ -340,7 +344,7 @@ void initSticks(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
-/*
+/**
  Initializes the geometry of the skybox
 
  \param[in] shader			Shader object
@@ -389,7 +393,7 @@ void initSkybox(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
-/*
+/**
  Initializes the geometry of the boat
 
  \param[in] shader			Shader object
@@ -437,7 +441,7 @@ void initBoat(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
-/*
+/**
  Initializes the geometry of the dock
 
  \param[in] shader			Shader object
@@ -485,7 +489,7 @@ void initDock(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
-/*
+/**
  Initializes the geometry of the green tree
 
  \param[in] shader			Shader object
@@ -534,7 +538,7 @@ void initGreenTree(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
-/*
+/**
  Initializes the geometry of the water
 
  \param[in] shader			Shader object
@@ -582,7 +586,7 @@ void initWater(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
-/*
+/**
  Initializes the geometry of the fire
 
  \param[in] shader			Shader object
@@ -630,7 +634,7 @@ void initFire(Shader &shader, MeshGeometry ** geometry) {
 	glBindVertexArray(0);
 }
 
-/*
+/**
  Draw the tree
 
  \param[in] tree			 Tree object
@@ -667,7 +671,7 @@ void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glUseProgram(0);
 }
 
-/*
+/**
  Draw the ground
 
  \param[in] ground			 Ground object
@@ -704,7 +708,7 @@ void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & 
 	glUseProgram(0);
 }
 
-/*
+/**
  Draw sticks for the fire
 
  \param[in] tree			 Sticks object
@@ -741,7 +745,7 @@ void drawSticks(Object *sticks, const glm::mat4 & viewMatrix, const glm::mat4 & 
 	glUseProgram(0);
 }
 
-/*
+/**
  Draw the skybox
 
  \param[in] skybox			 Skybox object
@@ -775,7 +779,7 @@ void drawSkybox(Object *skybox, const glm::mat4 & viewMatrix, const glm::mat4 & 
 	glUseProgram(0);
 }
 
-/*
+/**
  Draw the boat
 
  \param[in] tree			 Boat object
@@ -813,7 +817,7 @@ void drawBoat(Object *boat, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glUseProgram(0);
 }
 
-/*
+/**
  Draw the dock
 
  \param[in] tree			 Dock object
@@ -851,7 +855,7 @@ void drawDock(Object *dock, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glUseProgram(0);
 }
 
-/*
+/**
  Draw the green tree
 
  \param[in] tree			 Green tree object
@@ -885,7 +889,7 @@ void drawGreenTree(Object *greenTree, const glm::mat4 & viewMatrix, const glm::m
 	glUseProgram(0);
 }
 
-/*
+/**
  Draw the water
 
  \param[in] tree			 Water object
@@ -942,7 +946,7 @@ void drawWater(Object *water, const glm::mat4 & viewMatrix, const glm::mat4 & pr
 	glUseProgram(0);
 }
 
-/*
+/**
  Draw the fire
 
  \param[in] tree			 Fire object
@@ -1001,7 +1005,7 @@ void drawFire(Object *fire, const glm::mat4 & viewMatrix, const glm::mat4 & proj
 	glUseProgram(0);
 }
 
-/*
+/**
  Sets the material uniforms to the shader
 
 \param[in] ambient			Model matrix
@@ -1037,7 +1041,7 @@ void setMaterialUniforms(const glm::vec3 & ambient, const glm::vec3 & diffuse, c
 	CHECK_GL_ERROR();
 }
 
-/*
+/**
  Sets the transforms uniforms to the shader
 
 \param[in] modelMatrix			Model matrix
@@ -1073,7 +1077,7 @@ void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMatrix, c
 	glUniform3fv(shaderProgram.cameraDirectionLocation, 1, glm::value_ptr(cameraViewDirection));
 }
 
-/*
+/**
  Deletes geometry
 
  \param[in] geometry	Geometry object
@@ -1084,7 +1088,7 @@ void deleteGeometry(MeshGeometry *geometry) {
 	glDeleteBuffers(1, &geometry->elementBufferObject);
 }
 
-/*
+/**
  Deletes all meshes in the scene
 */
 void cleanMeshes() {
@@ -1102,7 +1106,7 @@ void cleanMeshes() {
 	pgr::deleteProgramAndShaders(fireShaderProgram.program);
 }
 
-/*
+/**
  Initializes all models in the scene
 */
 void initModels() {

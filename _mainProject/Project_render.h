@@ -19,22 +19,23 @@
 #include "meshes\greenTree.h"
 #include "meshes\sticks.h"
 #include "data.h"
+#include "pgr.h"
 #include <iostream>
 #include <vector>
 
-// Name of the window
+/// Name of the window
 extern const char* WIN_TITLE;
-// Start color of the fire
+/// Start color of the fire
 extern const glm::vec3 fireColor;
-// Ambient color of the fire
+/// Ambient color of the fire
 extern glm::vec3 fireAmbient;
-// Diffuse color of the fire
+/// Diffuse color of the fire
 extern glm::vec3 fireDiffuse;
-// Specualar color of the fire
+/// Specualar color of the fire
 extern glm::vec3 fireSpecular;
 
-/* shader attrubutes/parametrs locations */
-struct Shader {
+/** shader attrubutes/parametrs locations */
+typedef struct Shader {
 	GLuint program;					// shader program
 	GLint positionLocation;			// position fo the vertex
 	GLint normalLocation;			// normal of the vertex
@@ -64,9 +65,10 @@ struct Shader {
 	GLint texSamplerLocation;		// texture sampler
 
 	GLint timeLocation;				// current time
-};
-/* mesh with buffers, materials and texture*/
-struct MeshGeometry {
+}Shader;
+
+/** mesh with buffers, materials and texture*/
+typedef struct MeshGeometry {
 	GLuint        vertexBufferObject;	// VBO
 	GLuint        elementBufferObject;	// EBO
 	GLuint        vertexArrayObject;	// VAO
@@ -77,17 +79,18 @@ struct MeshGeometry {
 	glm::vec3     specular;				// material specular
 	float         shininess;			// material shininess
 	GLuint		  texture;				// texture
-};
+}MeshGeometry;
 
-struct Object {
+/** object parameters */
+typedef struct Object {
 	glm::vec3 position;		// position of object
 	glm::vec3 direction;	// direction of object
 	float size;				// size of object
 	float angle;			// view angle of object
-};
+}object;
 
-/* all objects of the scene*/
-struct Objects {
+/** all objects of the scene*/
+typedef struct Objects {
 	Object * tree;
 	Object * ground;
 	Object * skybox;
@@ -97,10 +100,10 @@ struct Objects {
 	Object * dock;
 	Object * sticks;
 	std::vector <Object *> greenTrees;
-};
+}Objects;
 
-/* state of the scene*/
-struct State {
+/** state of the scene*/
+typedef struct State {
 	glm::mat4 projectionMatrix;			// projection transform matrix
 	glm::mat4 viewMatrix;				// view transform matrix
 	int windowWidth;					// window width
@@ -112,10 +115,10 @@ struct State {
 	float currentTime;					// current time
 	float lastFireColorUpdate;			// last time of fire color update
 	bool keyMap[KEYS_COUNT];			// key map
-};
+}State;
 
-/* state of the camera*/
-struct Camera {
+/** state of the camera*/
+typedef struct Camera {
 	bool firstView;						// use first static view
 	bool secondView;					// use second static view 
 	bool freeCamera;					// use free camera
@@ -126,13 +129,13 @@ struct Camera {
 	float speed;						// speed of the camera
 	float elevationAngle;				// elevation angle 
 	float viewAngle;					// view angle
-};
+}Camera;
 
-/*
+/**
  Initializes all parametrs of the main shader
 */
 extern bool initShaderProgram();
-/*
+/**
  Initializes all parametrs of the shader with dynamic texture
 
  \param[out] shaderProgram		Shader object
@@ -143,7 +146,7 @@ extern bool initShaderProgram();
 */
 extern bool initDynamicObjectsShaderProgram(Shader & shaderProgram, const std::string & fragShader, const std::string & vertShader);
 
-/*
+/**
  Initializes all parametrs of the fire shader
 
  \param[out] shaderProgram		Shader object
@@ -154,7 +157,7 @@ extern bool initDynamicObjectsShaderProgram(Shader & shaderProgram, const std::s
 */
 extern bool initFireShaderProgram(Shader & shaderPRG, const std::string & fragShader, const std::string & vertShader);
 
-/*
+/**
  Initializes the geometry of the tree
 
  \param[in] shader			Shader object
@@ -162,7 +165,7 @@ extern bool initFireShaderProgram(Shader & shaderPRG, const std::string & fragSh
 */
 extern void initTree(Shader &shader, MeshGeometry ** geometry);
 
-/*
+/**
  Draw the tree
 
  \param[in] tree			 Tree object
@@ -171,7 +174,7 @@ extern void initTree(Shader &shader, MeshGeometry ** geometry);
 */
 extern void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
-/*
+/**
  Initializes the geometry of the ground
 
  \param[in] shader			Shader object
@@ -179,7 +182,7 @@ extern void drawTree(Object *tree, const glm::mat4 & viewMatrix, const glm::mat4
 */
 extern void initGround(Shader &shader, MeshGeometry ** geometry);
 
-/*
+/**
  Draw the ground
 
  \param[in] ground			 Ground object
@@ -188,7 +191,7 @@ extern void initGround(Shader &shader, MeshGeometry ** geometry);
 */
 extern void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
-/*
+/**
  Initializes the geometry of the skybox
 
  \param[in] shader			Shader object
@@ -196,7 +199,7 @@ extern void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::
 */
 extern void initSkybox(Shader &shader, MeshGeometry ** geometry);
 
-/*
+/**
  Draw the skybox
 
  \param[in] skybox			 Skybox object
@@ -205,7 +208,7 @@ extern void initSkybox(Shader &shader, MeshGeometry ** geometry);
 */
 extern void drawSkybox(Object *skybox, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
-/*
+/**
  Initializes the geometry of the water
 
  \param[in] shader			Shader object
@@ -213,7 +216,7 @@ extern void drawSkybox(Object *skybox, const glm::mat4 & viewMatrix, const glm::
 */
 extern void initWater(Shader &shader, MeshGeometry ** geometry);
 
-/*
+/**
  Draw the water
 
  \param[in] tree			 Water object
@@ -222,7 +225,7 @@ extern void initWater(Shader &shader, MeshGeometry ** geometry);
 */
 extern void drawWater(Object *water, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
-/*
+/**
  Initializes the geometry of the fire
 
  \param[in] shader			Shader object
@@ -230,7 +233,7 @@ extern void drawWater(Object *water, const glm::mat4 & viewMatrix, const glm::ma
 */
 extern void initFire(Shader &shader, MeshGeometry ** geometry);
 
-/*
+/**
  Draw the fire
 
  \param[in] tree			 Fire object
@@ -239,7 +242,7 @@ extern void initFire(Shader &shader, MeshGeometry ** geometry);
 */
 extern void drawFire(Object *fire, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
-/*
+/**
  Initializes the geometry of the boat
 
  \param[in] shader			Shader object
@@ -247,7 +250,7 @@ extern void drawFire(Object *fire, const glm::mat4 & viewMatrix, const glm::mat4
 */
 extern void initBoat(Shader &shader, MeshGeometry ** geometry);
 
-/*
+/**
  Draw the boat
 
  \param[in] tree			 Boat object
@@ -256,7 +259,7 @@ extern void initBoat(Shader &shader, MeshGeometry ** geometry);
 */
 extern void drawBoat(Object *boat, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
-/*
+/**
  Initializes the geometry of the dock
 
  \param[in] shader			Shader object
@@ -264,7 +267,7 @@ extern void drawBoat(Object *boat, const glm::mat4 & viewMatrix, const glm::mat4
 */
 extern void initDock(Shader &shader, MeshGeometry ** geometry);
 
-/*
+/**
  Draw the dock
 
  \param[in] tree			 Dock object
@@ -273,7 +276,7 @@ extern void initDock(Shader &shader, MeshGeometry ** geometry);
 */
 extern void drawDock(Object *dock, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
-/*
+/**
  Initializes the geometry of the green tree
 
  \param[in] shader			Shader object
@@ -281,7 +284,7 @@ extern void drawDock(Object *dock, const glm::mat4 & viewMatrix, const glm::mat4
 */
 extern void initGreenTree(Shader &shader, MeshGeometry ** geometry);
 
-/*
+/**
  Draw the green tree
 
  \param[in] tree			 Green tree object
@@ -290,7 +293,7 @@ extern void initGreenTree(Shader &shader, MeshGeometry ** geometry);
 */
 extern void drawGreenTree(Object *dock, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
-/*
+/**
  Initializes the geometry of the sticks for the fire
 
  \param[in] shader			Shader object
@@ -298,7 +301,7 @@ extern void drawGreenTree(Object *dock, const glm::mat4 & viewMatrix, const glm:
 */
 extern void initSticks(Shader &shader, MeshGeometry ** geometry);
 
-/*
+/**
  Draw sticks for the fire
 
  \param[in] tree			 Sticks object
@@ -307,7 +310,7 @@ extern void initSticks(Shader &shader, MeshGeometry ** geometry);
 */
 extern void drawSticks(Object *sticks, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
-/*
+/**
  Sets the transforms uniforms to the shader
 
 \param[in] modelMatrix			Model matrix
@@ -316,7 +319,7 @@ extern void drawSticks(Object *sticks, const glm::mat4 & viewMatrix, const glm::
 */
 extern void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
-/*
+/**
  Sets the material uniforms to the shader
 
 \param[in] ambient			Model matrix
@@ -328,19 +331,19 @@ extern void setTransform(const glm::mat4 & modelMatrix, const glm::mat4 & viewMa
 */
 extern void setMaterialUniforms(const glm::vec3 &ambient, const glm::vec3 &diffuse, const glm::vec3 &specular, float shininess, GLuint texture, bool useSkybox);
 
-/*
+/**
  Deletes geometry
 
  \param[in] geometry	Geometry object	
 */
 extern void deleteGeometry(MeshGeometry *geometry);
 
-/*
+/**
  Deletes all meshes in the scene
 */
 extern void cleanMeshes();
 
-/*
+/**
  Initializes all models in the scene
 */
 extern void initModels();
@@ -355,16 +358,22 @@ extern MeshGeometry * dockGeometry;
 extern MeshGeometry * greenTreeGeometry;
 extern MeshGeometry * sticksGeometry;
 
-// Main shader
+/// Main shader
 extern Shader shaderProgram;
 
-// Water shader
+/// Water shader
 extern Shader waterShaderProgram;
 
-// Fire shader
+/// Fire shader
 extern Shader fireShaderProgram;
+
+/// All objects
 extern Objects objects;
+
+/// Main camera
 extern Camera camera;
+
+/// State object
 extern State gameState;
 
 #endif

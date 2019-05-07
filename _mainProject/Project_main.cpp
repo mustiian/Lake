@@ -7,9 +7,8 @@
 //----------------------------------------------------------------------------------------
 
 #include "Project_render.h"
-#include "pgr.h"
 
-/*
+/**
  Sets viewMatrix and projectionMatrix of the camera
 */
 void setCamera() {
@@ -59,7 +58,7 @@ void setCamera() {
 	
 }
 
-/*
+/**
  Draw all object of the scene
 */
 void DisplayFunc (void) {
@@ -98,7 +97,7 @@ void DisplayFunc (void) {
 	glutSwapBuffers();
 }
 
-/*
+/**
  Change window size
 
  \param[in] width	New width of the window
@@ -111,7 +110,7 @@ void Reshape(int width, int height) {
 	gameState.projectionMatrix = glm::perspective(glm::radians(60.0f), float(gameState.windowWidth) / float(gameState.windowHeight), 1.0f, 1000.0f);
 }
 
-/*
+/**
 	Check if the camera doesn't fall from the scene
 */
 void checkCollision() {
@@ -130,7 +129,7 @@ void checkCollision() {
 	}
 }
 
-/*
+/**
  Move boat
 
 \param[in] time		Current time
@@ -145,7 +144,7 @@ void moveBoat(float time) {
 	objects.boat->position.z -= sin(glm::radians(objects.boat->angle)) * 1.0f;
 }
 
-/*
+/**
  Increase camera speed
 
 \param[in] deltaSpeed	Speed
@@ -158,7 +157,7 @@ void increaseCameraSpeed(float deltaSpeed) {
 	}
 }
 
-/*
+/**
  Decrease camera speed
 
 \param[in] deltaSpeed	Speed
@@ -171,7 +170,7 @@ void decreaseCameraSpeed(float deltaSpeed) {
 	}
 }
 
-/*
+/**
  Turn camera to the right
 
 \param[in] deltaAngle	Angle(in radians)
@@ -188,7 +187,7 @@ void turnCameraRight(float deltaAngle) {
 	camera.direction.z = sin(glm::radians(camera.viewAngle));
 }
 
-/*
+/**
  Turn camera to the left
 
 \param[in] deltaAngle	Angle(in radians)
@@ -203,7 +202,7 @@ void turnCameraLeft(float deltaAngle) {
 	camera.direction.z = sin(glm::radians(camera.viewAngle));
 }
 
-/*
+/**
  Called then the mouse cursor was moved
 
 \param[in] xpos		X position of the cursor
@@ -233,7 +232,9 @@ void PassiveMouse(int xpos, int ypos) {
 
 		glutPostRedisplay();
 	}
-}/*
+}
+
+/**
   Called then clicked mouse
 
 \param[in] button	Value of the button
@@ -263,11 +264,10 @@ void Mouse(int button, int status, int x, int y) {
 		if (object == 3) {
 			std::cout << "Click letf button ground" << std::endl;
 			}
-		}
 	}
 }
 
-/*
+/**
  Delete all objects of the scene
 */
 void clean(void) {
@@ -285,7 +285,7 @@ void clean(void) {
 	}
 }
 
-/*
+/**
  Called then a keyboar button was pressed
 
 \param[in] key		Value of the button
@@ -333,7 +333,7 @@ void Keyboard(unsigned char key, int mouseX, int mouseY) {
 	}
 }
 
-/*
+/**
  Called when a special keybord button was pressed
 
 \param[in] key		Value of the button
@@ -360,7 +360,7 @@ void SpecialKeyboard(int key, int mouseX, int mouseY) {
 	}
 }
 
-/*
+/**
  Called when a special keybord button was released
 
 \param[in] key		Value of the button
@@ -384,7 +384,7 @@ void SpecialKeyboardUp(int key, int mouseX, int mouseY) {
 	}
 }
 
-/*
+/**
  Updates camera position, current time and fire color every time
 */
 void update(float elapsedTime) {
@@ -406,7 +406,7 @@ void update(float elapsedTime) {
 		gameState.lastFireColorUpdate = elapsedTime;
 	}
 }
-/*
+/**
  Caled every refreshTime
 */
 void Timer(int value) {
@@ -436,7 +436,7 @@ void Timer(int value) {
 	glutPostRedisplay();
 }
 
-/*
+/**
  Set trees positons and size
 */
 void setTreesPosition() {
@@ -471,10 +471,11 @@ void setTreesPosition() {
 	objects.greenTrees[19]->position = glm::vec3(130.0f, -15.f, -150.0f);
 }
 
-/*
+/**
  Set all objects in the scene
 */
 void setAttr() {
+
 	objects.tree = new Object();
 	objects.tree->position = glm::vec3(80.0f, -6.f, 60.0f);
 	objects.tree->direction = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -544,7 +545,7 @@ void setAttr() {
 	camera.firstView = true;
 }
 
-/*
+/**
  Initializes shaders and objects
 */
 bool init(void) {

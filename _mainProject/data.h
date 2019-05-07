@@ -9,8 +9,6 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include "pgr.h"
-
 #pragma once
 
 // main window width
