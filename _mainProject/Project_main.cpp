@@ -8,6 +8,8 @@
 
 #include "Project_render.h"
 
+std::vector<glm::vec3> waterArea;
+
 /**
  Sets viewMatrix and projectionMatrix of the camera
 */
@@ -79,19 +81,23 @@ void DisplayFunc (void) {
 	glStencilFunc(GL_ALWAYS, 3, -1);
 	drawGround(objects.ground, gameState.viewMatrix, gameState.projectionMatrix);
 
+	glStencilFunc(GL_ALWAYS, 4, -1);
+	drawWater(objects.water, gameState.viewMatrix, gameState.projectionMatrix);
+
+	glStencilFunc(GL_ALWAYS, 5, -1);
+	drawSticks(objects.sticks, gameState.viewMatrix, gameState.projectionMatrix);
+
 	glDisable(GL_STENCIL_TEST);
 
 	drawSkybox(objects.skybox, gameState.viewMatrix, gameState.projectionMatrix);
 	drawTree(objects.tree, gameState.viewMatrix, gameState.projectionMatrix);
-	drawGround(objects.ground, gameState.viewMatrix, gameState.projectionMatrix);
-	drawWater(objects.water, gameState.viewMatrix, gameState.projectionMatrix);
-	drawSticks(objects.sticks, gameState.viewMatrix, gameState.projectionMatrix);
 
-	for (int i = 0; i < objects.greenTrees.size(); i++) {
+	for (size_t i = 0; i < objects.greenTrees.size(); i++) {
 		drawGreenTree(objects.greenTrees[i], gameState.viewMatrix, gameState.projectionMatrix);
 	}
 
-	drawFire(objects.fire, gameState.viewMatrix, gameState.projectionMatrix);
+	if(gameState.useFIre)
+		drawFire(objects.fire, gameState.viewMatrix, gameState.projectionMatrix);
 
 	CHECK_GL_ERROR();
 	glutSwapBuffers();
@@ -111,6 +117,62 @@ void Reshape(int width, int height) {
 }
 
 /**
+ Counts the area of the triangle
+
+ \param[in] firstPoint	first point of the triangle
+ \param[in] secondPoint	second point of the triangle
+ \param[in] thirdPoint	third point of the triangle
+
+ \return size of area
+*/
+float area(const glm::vec3 & firstPoint, const glm::vec3 & secondPoint, const glm::vec3 & thirdPoint) {
+	return std::abs( (
+					 firstPoint.z  * (secondPoint.x - thirdPoint.x) + 
+					 secondPoint.z * (thirdPoint.x  - firstPoint.x) +
+					 thirdPoint.z  * (firstPoint.x  - secondPoint.x) 
+					 ) / 2.0f );
+}
+
+/**
+ Check if the point is in the triangle
+
+ \param[in] firstPoint	first point of the triangle
+ \param[in] secondPoint	second point of the triangle
+ \param[in] thirdPoint	third point of the triangle
+ \param[in] point		point to check
+
+ \return true if the point inside triangle
+*/
+bool isInside(const glm::vec3 & firstPoint, const glm::vec3 & secondPoint, const glm::vec3 & thirdPoint, const glm::vec3 & point) {
+	float A = area(firstPoint, secondPoint, thirdPoint);
+	float A1 = area(point, secondPoint, thirdPoint);
+	float A2 = area(firstPoint, point, thirdPoint);
+	float A3 = area(firstPoint, secondPoint, point);
+
+	return (A == A1 + A2 + A3);
+}
+
+/**
+ Check if the point lay is in the water area
+
+ \param[in] point	point to check
+
+ \return true if the point inside water area
+*/
+bool isInsideWaterArea(const glm::vec3 & point) {
+	bool inside = false;
+	for (size_t i = 0; i < waterArea.size() - 2; i++)
+	{
+		inside = isInside(waterArea[i], waterArea[i + 1], waterArea[i + 2], point);
+
+		if (inside)
+			return true;
+	}
+
+	return false;
+}
+
+/**
 	Check if the camera doesn't fall from the scene
 */
 void checkCollision() {
@@ -127,6 +189,14 @@ void checkCollision() {
 	else if (camera.position.z < -170.0f) {
 		camera.position.z = -170.0f;
 	}
+
+	if (isInsideWaterArea(camera.position)) {
+		camera.collision = true;
+	}
+	else {
+		camera.collision = false;
+	}
+	//std::cout << camera.position.x << ' ' << camera.position.z << std::endl;
 }
 
 /**
@@ -264,6 +334,12 @@ void Mouse(int button, int status, int x, int y) {
 		if (object == 3) {
 			std::cout << "Click letf button ground" << std::endl;
 			}
+		if (object == 5) {
+			gameState.useSticks = true;
+			gameState.useFIre = false;
+			objects.sticks->position.y = -20.0f;
+			std::cout << "Click letf button sticks" << std::endl;
+		}
 	}
 }
 
@@ -280,7 +356,7 @@ void clean(void) {
 	delete objects.boat;
 	delete objects.sticks;
 
-	for (int i = 0; i < objects.greenTrees.size(); i++) {
+	for (size_t i = 0; i < objects.greenTrees.size(); i++) {
 		delete objects.greenTrees[i];
 	}
 }
@@ -357,6 +433,16 @@ void SpecialKeyboard(int key, int mouseX, int mouseY) {
 	case GLUT_KEY_DOWN:
 		gameState.keyMap[KEY_DOWN_ARROW] = true;
 		break;
+	case GLUT_KEY_F1:
+		if (gameState.useSticks) {
+			gameState.useSticks = false;
+			gameState.useFIre = true;
+			objects.sticks->position = objects.fire->position = camera.position;
+			objects.sticks->position.y = -5.5f;
+			objects.fire->position.y = -2.0f;
+			objects.fire->position.z += -2.0f;
+		}
+		break;
 	}
 }
 
@@ -390,7 +476,12 @@ void SpecialKeyboardUp(int key, int mouseX, int mouseY) {
 void update(float elapsedTime) {
 	float deltaTime = elapsedTime - gameState.currentTime;
 	gameState.currentTime = elapsedTime;
-	camera.position +=  camera.speed * camera.direction;
+	
+	if (camera.collision) {
+		camera.position -= camera.direction;
+	}
+
+	camera.position += camera.speed * camera.direction;
 
 	if (gameState.useBoat) {
 		moveBoat(elapsedTime);
@@ -437,10 +528,33 @@ void Timer(int value) {
 }
 
 /**
+ Set water area
+*/
+void setWaterArea() {
+	waterArea.push_back(glm::vec3(120.0f, 0.0f, -110.0f));
+	waterArea.push_back(glm::vec3(140.0f, 0.0f, -80.0f));
+	waterArea.push_back(glm::vec3(40.0f, 0.0f, -80.0f));
+	waterArea.push_back(glm::vec3(135.0f, 0.0f, -20.0f));
+	waterArea.push_back(glm::vec3(0.0f, 0.0f, -75.0f));
+	waterArea.push_back(glm::vec3(30.0f, 0.0f, 75.0f));
+	waterArea.push_back(glm::vec3(-5.0f, 0.0f, 70.0f));
+	waterArea.push_back(glm::vec3(15.0f, 0.0f, -70.0f));
+	waterArea.push_back(glm::vec3(-6.0f, 0.0f, 7.0f));
+	waterArea.push_back(glm::vec3(-15.0f, 0.0f, -77.0f));
+	waterArea.push_back(glm::vec3(-20.0f, 0.0f, 9.0f));
+	waterArea.push_back(glm::vec3(-45.0f, 0.0f, -87.0f));
+	waterArea.push_back(glm::vec3(-20.0f, 0.0f, 75.0f));
+	waterArea.push_back(glm::vec3(-55.0f, 0.0f, 75.0f));
+	waterArea.push_back(glm::vec3(-90.0f, 0.0f, -90.0f));
+	waterArea.push_back(glm::vec3(-120.0f, 0.0f, -50.0f));
+	waterArea.push_back(glm::vec3(-120.0f, 0.0f, 50.0f));
+}
+
+/**
  Set trees positons and size
 */
 void setTreesPosition() {
-	for (int i = 0; i < objects.greenTrees.size(); i++) {
+	for (size_t i = 0; i < objects.greenTrees.size(); i++) {
 		if (objects.greenTrees[i] == NULL) {
 			Object* greenTree = new Object;
 			objects.greenTrees[i] = greenTree;
@@ -536,10 +650,13 @@ void setAttr() {
 	camera.direction = glm::vec3(0.0f, 0.0f, -1.0f);
 	camera.speed = 0.0f;
 	camera.viewAngle = 270.0f;
+	camera.collision = false;
 
 	gameState.useFog = false;
 	gameState.useBoat = false;
 	gameState.useFlashlight = false;
+	gameState.useFIre = true;
+	gameState.useSticks = false;
 	camera.secondView = false;
 	camera.freeCamera = false;
 	camera.firstView = true;
@@ -562,6 +679,7 @@ bool init(void) {
 	initModels();
 
 	setAttr();
+	setWaterArea();
 
 	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
 	CHECK_GL_ERROR();

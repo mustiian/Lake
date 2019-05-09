@@ -78,6 +78,7 @@ bool initShaderProgram() {
 	shaderProgram.fireAmbientLocation = glGetUniformLocation(shaderProgram.program, "fireAmbient");
 	shaderProgram.fireDiffuseLocation = glGetUniformLocation(shaderProgram.program, "fireDiffuse");
 	shaderProgram.fireSpecularLocation = glGetUniformLocation(shaderProgram.program, "fireSpecular");
+	shaderProgram.firePositionLocation = glGetUniformLocation(shaderProgram.program, "firePos");
 
 	// texture
 	shaderProgram.texSamplerLocation = glGetUniformLocation(shaderProgram.program, "texSampler");
@@ -86,6 +87,7 @@ bool initShaderProgram() {
 	shaderProgram.useFogLocation = glGetUniformLocation(shaderProgram.program, "useFog");
 
 	shaderProgram.useFlashlightLocation = glGetUniformLocation(shaderProgram.program, "useFlashlight");
+	shaderProgram.useFireLocation = glGetUniformLocation(shaderProgram.program, "useFire");
 
 	if (shaderProgram.texSamplerLocation == -1 || shaderProgram.useTextureLocation == -1 || shaderProgram.texCoordLocation == -1) {
 		std::cout << "Can't get all uniforms" << std::endl;
@@ -1024,9 +1026,13 @@ void setMaterialUniforms(const glm::vec3 & ambient, const glm::vec3 & diffuse, c
 	glUniform1i(shaderProgram.useFlashlightLocation, gameState.useFlashlight);
 	glUniform1i(shaderProgram.useSkyboxLocation, useSkybox);
 	glUniform1i(shaderProgram.useFogLocation, gameState.useFog);
+
+	// Set fire uniforms
 	glUniform3fv(shaderProgram.fireAmbientLocation, 1, glm::value_ptr(fireAmbient));
 	glUniform3fv(shaderProgram.fireDiffuseLocation, 1, glm::value_ptr(fireDiffuse));
 	glUniform3fv(shaderProgram.fireSpecularLocation, 1, glm::value_ptr(fireSpecular));
+	glUniform3fv(shaderProgram.firePositionLocation, 1, glm::value_ptr(objects.fire->position));
+	glUniform1i(shaderProgram.useFireLocation, gameState.useFIre);
 
 	// Set texture
 	if (texture != 0) {

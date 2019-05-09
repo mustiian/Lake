@@ -54,6 +54,7 @@ typedef struct Shader {
 	GLint cameraPositionLocation;	// camera position (for flashlight)
 	GLint cameraDirectionLocation;	// camera direction (for flashlight)
 
+	GLint firePositionLocation;		// position of the fire
 	GLint fireAmbientLocation;		// material ambient fo the fire
 	GLint fireDiffuseLocation;		// material diffuse of the fire
 	GLint fireSpecularLocation;		// material specular of the fire
@@ -62,6 +63,7 @@ typedef struct Shader {
 	GLint useSkyboxLocation;		// use skybox
 	GLint useFogLocation;			// use fog
 	GLint useFlashlightLocation;	// use flashlight
+	GLint useFireLocation;			// use fire
 	GLint texSamplerLocation;		// texture sampler
 
 	GLint timeLocation;				// current time
@@ -111,6 +113,8 @@ typedef struct State {
 	bool useFlashlight;					// use flashlight
 	bool useFog;						// use fog
 	bool useBoat;						// use boat
+	bool useFIre;						// use fire
+	bool useSticks;						// use sticks
 	float elapsedTime;					// elapsed time
 	float currentTime;					// current time
 	float lastFireColorUpdate;			// last time of fire color update
@@ -122,7 +126,9 @@ typedef struct Camera {
 	bool firstView;						// use first static view
 	bool secondView;					// use second static view 
 	bool freeCamera;					// use free camera
+	bool collision;						// check collision with objects
 	glm::vec3 position;					// position of the camera
+	glm::vec3 oldPosition;				// Previous position of the camera
 	glm::vec3 direction;				// direction of the camera
 	glm::vec3 center;					// center of the camera
 	glm::vec3 up;						// up of the camera

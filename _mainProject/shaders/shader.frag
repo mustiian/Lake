@@ -25,6 +25,7 @@ struct Light {
 
 uniform bool useFlashlight;
 uniform bool useFog;
+uniform bool useFire;
 uniform mat4 PVMmatrix;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -39,6 +40,7 @@ uniform Material material;
 uniform vec3 fireAmbient;
 uniform vec3 fireDiffuse;
 uniform vec3 fireSpecular;
+uniform vec3 firePos;
 
 smooth in vec2 texCoord_v; 
 smooth in vec3 eyePos_v; 
@@ -73,7 +75,7 @@ void initFireLight(){
 	fireLight.ambient = fireAmbient;
 	fireLight.diffuse = fireDiffuse;
 	fireLight.specular = fireSpecular;
-	fireLight.position = (viewMatrix * vec4(80.0f, -1.0f, 90.0f, 1.0)).xyz;
+	fireLight.position = (viewMatrix * vec4(firePos, 1.0)).xyz;
 }
 
 vec4 spotlightLight(Light light, vec3 vertexPosition, vec3 vertexNormal){
@@ -145,7 +147,9 @@ void main() {
 		outColor += spotlightLight(spotlight, eyePos_v, normal_v);
 
 	outColor += directionLight(sun, eyePos_v, normal_v);
-	outColor += 4.0 *pointLight(fireLight, eyePos_v, normal_v);
+
+	if (useFire)
+		outColor += 4.0 *pointLight(fireLight, eyePos_v, normal_v);
 	
 	if (material.useSkybox){
 		vec2 UV = vec2(texCoord_v.x * 1, texCoord_v.y * 1);
