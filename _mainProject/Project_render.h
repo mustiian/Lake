@@ -18,6 +18,7 @@
 #include "meshes\dock.h"
 #include "meshes\greenTree.h"
 #include "meshes\sticks.h"
+#include "meshes\cactus.h"
 #include "data.h"
 #include "pgr.h"
 #include <iostream>
@@ -81,6 +82,7 @@ typedef struct MeshGeometry {
 	glm::vec3     specular;				// material specular
 	float         shininess;			// material shininess
 	GLuint		  texture;				// texture
+	GLuint		  alternativeTexture;	// Alternative texture
 }MeshGeometry;
 
 /** object parameters */
@@ -101,6 +103,7 @@ typedef struct Objects {
 	Object * boat;
 	Object * dock;
 	Object * sticks;
+	Object * cactus;
 	std::vector <Object *> greenTrees;
 }Objects;
 
@@ -115,6 +118,7 @@ typedef struct State {
 	bool useBoat;						// use boat
 	bool useFIre;						// use fire
 	bool useSticks;						// use sticks
+	bool useSandTheme;					// use sand theme
 	float elapsedTime;					// elapsed time
 	float currentTime;					// current time
 	float lastFireColorUpdate;			// last time of fire color update
@@ -317,6 +321,23 @@ extern void initSticks(Shader &shader, MeshGeometry ** geometry);
 extern void drawSticks(Object *sticks, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
 
 /**
+ Initializes the geometry of the cactus
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
+extern void initCactus(Shader &shader, MeshGeometry ** geometry);
+
+/**
+ Draw the cactus
+
+ \param[in] cactus			 Cactus object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
+extern void drawCactus(Object *cactus, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix);
+
+/**
  Sets the transforms uniforms to the shader
 
 \param[in] modelMatrix			Model matrix
@@ -363,6 +384,7 @@ extern MeshGeometry * boatGeometry;
 extern MeshGeometry * dockGeometry;
 extern MeshGeometry * greenTreeGeometry;
 extern MeshGeometry * sticksGeometry;
+extern MeshGeometry * cactusGeometry;
 
 /// Main shader
 extern Shader shaderProgram;

@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="meshes\boat.cpp" />
+    <ClCompile Include="meshes\cactus.cpp" />
     <ClCompile Include="meshes\dock.cpp" />
     <ClCompile Include="meshes\fire.cpp" />
     <ClCompile Include="meshes\greenTree.cpp" />
@@ -34,6 +35,7 @@
   <ItemGroup>
     <ClInclude Include="data.h" />
     <ClInclude Include="meshes\boat.h" />
+    <ClInclude Include="meshes\cactus.h" />
     <ClInclude Include="meshes\dock.h" />
     <ClInclude Include="meshes\fire.h" />
     <ClInclude Include="meshes\greenTree.h" />
@@ -56,7 +58,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{F4DBB0B7-C1EC-4BAD-9D9C-8591971502D5}</ProjectGuid>
     <RootNamespace>mainProject</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

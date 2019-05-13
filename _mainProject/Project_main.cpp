@@ -87,14 +87,30 @@ void DisplayFunc (void) {
 	glStencilFunc(GL_ALWAYS, 5, -1);
 	drawSticks(objects.sticks, gameState.viewMatrix, gameState.projectionMatrix);
 
-	glDisable(GL_STENCIL_TEST);
-
+	glStencilFunc(GL_ALWAYS, 6, -1);
 	drawSkybox(objects.skybox, gameState.viewMatrix, gameState.projectionMatrix);
+
+	glStencilFunc(GL_ALWAYS, 7, -1);
 	drawTree(objects.tree, gameState.viewMatrix, gameState.projectionMatrix);
 
-	for (size_t i = 0; i < objects.greenTrees.size(); i++) {
-		drawGreenTree(objects.greenTrees[i], gameState.viewMatrix, gameState.projectionMatrix);
+	glStencilFunc(GL_ALWAYS, 8, -1);
+	if (gameState.useSandTheme) {
+		for (size_t i = 0; i < objects.greenTrees.size(); i++) {
+			objects.greenTrees[i]->position.y = -1.0f;
+			objects.greenTrees[i]->size = 50.0f;
+			drawCactus(objects.greenTrees[i], gameState.viewMatrix, gameState.projectionMatrix);
+		}
 	}
+	else {
+		for (size_t i = 0; i < objects.greenTrees.size(); i++) {
+			objects.greenTrees[i]->position.y = -15.0f;
+			objects.greenTrees[i]->size = 730.0f;
+			drawGreenTree(objects.greenTrees[i], gameState.viewMatrix, gameState.projectionMatrix);
+		}
+	}
+
+	glDisable(GL_STENCIL_TEST);
+
 
 	if(gameState.useFIre)
 		drawFire(objects.fire, gameState.viewMatrix, gameState.projectionMatrix);
@@ -188,6 +204,10 @@ void checkCollision() {
 	}
 	else if (camera.position.z < -170.0f) {
 		camera.position.z = -170.0f;
+	}
+
+	if (glm::distance(camera.position, objects.sticks->position) < 10.0f) {
+		camera.position -= camera.speed * camera.direction;
 	}
 
 	if (isInsideWaterArea(camera.position)) {
@@ -331,13 +351,14 @@ void Mouse(int button, int status, int x, int y) {
 				camera.position.y = 0.0f;
 			}
 		}
-		if (object == 3) {
-			std::cout << "Click letf button ground" << std::endl;
+		if (object == 6) {
+			std::cout << "Click letf button skybox" << std::endl;
+			gameState.useSandTheme = !gameState.useSandTheme;
 			}
 		if (object == 5) {
 			gameState.useSticks = true;
 			gameState.useFIre = false;
-			objects.sticks->position.y = -20.0f;
+			objects.sticks->position.y = -40.0f;
 			std::cout << "Click letf button sticks" << std::endl;
 		}
 	}
@@ -437,7 +458,7 @@ void SpecialKeyboard(int key, int mouseX, int mouseY) {
 		if (gameState.useSticks) {
 			gameState.useSticks = false;
 			gameState.useFIre = true;
-			objects.sticks->position = objects.fire->position = camera.position;
+			objects.sticks->position = objects.fire->position = camera.position + 10.0f * camera.direction;
 			objects.sticks->position.y = -5.5f;
 			objects.fire->position.y = -2.0f;
 			objects.fire->position.z += -2.0f;
@@ -637,7 +658,7 @@ void setAttr() {
 	objects.dock->direction = glm::vec3(0.0f, 0.0f, 0.0f);
 	objects.dock->size = 600.0f;
 	objects.dock->angle = 0.0f;
-	
+
 	setTreesPosition();
 
 	gameState.windowWidth = WIN_WIDTH;
@@ -657,6 +678,7 @@ void setAttr() {
 	gameState.useFlashlight = false;
 	gameState.useFIre = true;
 	gameState.useSticks = false;
+	gameState.useSandTheme = false;
 	camera.secondView = false;
 	camera.freeCamera = false;
 	camera.firstView = true;

@@ -28,7 +28,8 @@ MeshGeometry * fireGeometry = NULL;
 MeshGeometry * boatGeometry = NULL;
 MeshGeometry * dockGeometry = NULL;
 MeshGeometry * greenTreeGeometry = NULL;
-MeshGeometry * sticksGeometry = NULL;
+MeshGeometry * sticksGeometry = NULL; 
+MeshGeometry * cactusGeometry = NULL;
 
 /// All objects
 Objects objects;
@@ -261,6 +262,7 @@ void initGround(Shader &shader, MeshGeometry ** geometry) {
 
 	(*geometry)->texture = 0;
 	(*geometry)->texture = pgr::createTexture("meshes/grass_new.jpg");
+	(*geometry)->alternativeTexture = pgr::createTexture("meshes/sand.jpg");
 
 	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
 	glBindVertexArray((*geometry)->vertexArrayObject);
@@ -357,6 +359,7 @@ void initSkybox(Shader &shader, MeshGeometry ** geometry) {
 
 	(*geometry)->texture = 0;
 	(*geometry)->texture = pgr::createTexture("meshes/skybox_new.png");
+	(*geometry)->alternativeTexture = pgr::createTexture("meshes/skybox_sand.png");
 
 	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
 	glBindVertexArray((*geometry)->vertexArrayObject);
@@ -541,6 +544,55 @@ void initGreenTree(Shader &shader, MeshGeometry ** geometry) {
 }
 
 /**
+ Initializes the geometry of the cactus
+
+ \param[in] shader			Shader object
+ \param[out] geometry		Geometry that contains all information about object
+*/
+void initCactus(Shader &shader, MeshGeometry ** geometry) {
+	*geometry = new MeshGeometry;
+
+	(*geometry)->texture = 0;
+	(*geometry)->texture = pgr::createTexture("meshes/cactus.png");
+
+	glGenVertexArrays(1, &((*geometry)->vertexArrayObject));
+	glBindVertexArray((*geometry)->vertexArrayObject);
+
+	// Vertex buffer 
+	glGenBuffers(1, &((*geometry)->vertexBufferObject));
+	glBindBuffer(GL_ARRAY_BUFFER, (*geometry)->vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, cactusNVertices * cactusNAttribsPerVertex * sizeof(float), cactusVertices, GL_STATIC_DRAW);
+
+	// Element buffer
+	glGenBuffers(1, &((*geometry)->elementBufferObject));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (*geometry)->elementBufferObject);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * sizeof(unsigned)* cactusNTriangles, cactusTriangles, GL_STATIC_DRAW);
+
+	// Get position location
+	glEnableVertexAttribArray(shader.positionLocation);
+	glVertexAttribPointer(shader.positionLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+
+	CHECK_GL_ERROR();
+	// Get normal location
+	glEnableVertexAttribArray(shader.normalLocation);
+	glVertexAttribPointer(shader.normalLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	// Get texture location
+	glEnableVertexAttribArray(shader.texCoordLocation);
+	glVertexAttribPointer(shader.texCoordLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+	(*geometry)->ambient = glm::vec3(0.3f, 0.4f, 0.3f);
+	(*geometry)->diffuse = glm::vec3(0.2f, 0.4f, 0.2f);
+	(*geometry)->specular = glm::vec3(0.5f);
+	(*geometry)->shininess = 2.0f;
+	(*geometry)->numTriangles = cactusNTriangles;
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+}
+
+/**
  Initializes the geometry of the water
 
  \param[in] shader			Shader object
@@ -688,14 +740,27 @@ void drawGround(Object *ground, const glm::mat4 & viewMatrix, const glm::mat4 & 
 	modelMatrix = glm::rotate(modelMatrix, glm::radians(270.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	setTransform(modelMatrix, viewMatrix, projectionMatrix);
-	setMaterialUniforms(
-		groundGeometry->ambient,
-		groundGeometry->diffuse,
-		groundGeometry->specular,
-		groundGeometry->shininess,
-		groundGeometry->texture,
-		false
-	);
+	if (gameState.useSandTheme) {
+		setMaterialUniforms(
+			groundGeometry->ambient,
+			groundGeometry->diffuse,
+			groundGeometry->specular,
+			groundGeometry->shininess,
+			groundGeometry->alternativeTexture,
+			false
+		);
+	}
+	else {
+		setMaterialUniforms(
+			groundGeometry->ambient,
+			groundGeometry->diffuse,
+			groundGeometry->specular,
+			groundGeometry->shininess,
+			groundGeometry->texture,
+			false
+		);
+	}
+
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -762,14 +827,27 @@ void drawSkybox(Object *skybox, const glm::mat4 & viewMatrix, const glm::mat4 & 
 	modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	setTransform(modelMatrix, viewMatrix, projectionMatrix);
-	setMaterialUniforms(
-		skyboxGeometry->ambient,
-		skyboxGeometry->diffuse,
-		skyboxGeometry->specular,
-		skyboxGeometry->shininess,
-		skyboxGeometry->texture,
-		true
-	);
+	if (gameState.useSandTheme) {
+		setMaterialUniforms(
+			skyboxGeometry->ambient,
+			skyboxGeometry->diffuse,
+			skyboxGeometry->specular,
+			skyboxGeometry->shininess,
+			skyboxGeometry->alternativeTexture,
+			true
+		);
+	}
+	else {
+		setMaterialUniforms(
+			skyboxGeometry->ambient,
+			skyboxGeometry->diffuse,
+			skyboxGeometry->specular,
+			skyboxGeometry->shininess,
+			skyboxGeometry->texture,
+			true
+		);
+	}
+
 
 	glBindVertexArray(skyboxGeometry->vertexArrayObject);
 
@@ -890,6 +968,45 @@ void drawGreenTree(Object *greenTree, const glm::mat4 & viewMatrix, const glm::m
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
+
+
+/**
+ Draw the cactus
+
+ \param[in] cactus			 Cactus object
+ \param[in] viewMatrix		 View matrix
+ \param[in] projectionMatrix Projection matrix
+*/
+void drawCactus(Object *cactus, const glm::mat4 & viewMatrix, const glm::mat4 & projectionMatrix) {
+	glUseProgram(shaderProgram.program);
+
+	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), cactus->position);
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(cactus->size, cactus->size, cactus->size));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+	setTransform(modelMatrix, viewMatrix, projectionMatrix);
+	setMaterialUniforms(
+		cactusGeometry->ambient,
+		cactusGeometry->diffuse,
+		cactusGeometry->specular,
+		cactusGeometry->shininess,
+		cactusGeometry->texture,
+		false
+	);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindVertexArray(cactusGeometry->vertexArrayObject);
+
+	glDrawElements(GL_TRIANGLES, cactusGeometry->numTriangles * 3, GL_UNSIGNED_INT, 0);
+
+	CHECK_GL_ERROR();
+
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+
 
 /**
  Draw the water
@@ -1107,6 +1224,7 @@ void cleanMeshes() {
 	deleteGeometry(dockGeometry);
 	deleteGeometry(greenTreeGeometry);
 	deleteGeometry(sticksGeometry);
+	deleteGeometry(cactusGeometry);
 	pgr::deleteProgramAndShaders(shaderProgram.program);
 	pgr::deleteProgramAndShaders(waterShaderProgram.program);
 	pgr::deleteProgramAndShaders(fireShaderProgram.program);
@@ -1125,4 +1243,5 @@ void initModels() {
 	initDock(shaderProgram, &dockGeometry);
 	initGreenTree(shaderProgram, &greenTreeGeometry);
 	initSticks(shaderProgram, &sticksGeometry);
+	initCactus(shaderProgram, &cactusGeometry);
 }
